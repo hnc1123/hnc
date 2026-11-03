@@ -1,0 +1,8 @@
+.tools/
+.tmp-edge/
+node_modules/
+.vscode/
+*.log
+Thumbs.db
+.DS_Store
+desktop.ini
