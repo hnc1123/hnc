@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="声屿 SoundIsle 最近播放，记录保存在浏览器本地。">
+  <title>最近播放 · 声屿 SoundIsle</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="recent" data-base="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebarMount"></aside>
+    <main class="main">
+      <header class="topbar" id="topbarMount"></header>
+      <div class="scroll">
+        <div class="page-head">
+          <h1>最近播放</h1>
+          <span class="sub">最多保留 30 首，只记录目录里的歌曲</span>
+          <div class="actions">
+            <button class="btn-line" id="clearRecent">清空记录</button>
+          </div>
+        </div>
+        <div id="recentBody"></div>
+        <div class="page-foot">
+          <span>声屿 SoundIsle · 静态演示站点</span>
+          <span>记录保存在本机浏览器的 localStorage</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="playerRoot"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/player.js"></script>
+  <script src="../js/recent.js"></script>
+</body>
+</html>

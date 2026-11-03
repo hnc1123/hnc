@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="声屿 SoundIsle 我的收藏，收藏数据保存在浏览器本地。">
+  <title>我的收藏 · 声屿 SoundIsle</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="favorites" data-base="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebarMount"></aside>
+    <main class="main">
+      <header class="topbar" id="topbarMount"></header>
+      <div class="scroll">
+        <div class="page-head">
+          <h1>我的收藏</h1>
+          <span class="sub">收藏只保存在这台电脑的浏览器里</span>
+          <div class="actions">
+            <button class="btn-line" id="clearBtn">清空</button>
+            <button class="btn-primary" id="playAllBtn">播放全部</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><b id="statSongs">0</b><span>收藏单曲</span></div>
+          <div class="stat"><b id="statLists">0</b><span>收藏歌单</span></div>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="songs" role="tab" aria-selected="true">单曲</button>
+          <button class="tab" data-tab="playlists" role="tab" aria-selected="false">歌单</button>
+        </div>
+
+        <div id="favBody"></div>
+
+        <div class="page-foot">
+          <span>声屿 SoundIsle · 静态演示站点</span>
+          <span>收藏与最近播放均使用 localStorage</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="playerRoot"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/player.js"></script>
+  <script src="../js/favorites.js"></script>
+</body>
+</html>
