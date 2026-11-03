@@ -1,5 +1,7 @@
 .tools/
 .tmp-edge/
+.shots/
+.dsh-inspect/
 node_modules/
 .vscode/
 *.log
