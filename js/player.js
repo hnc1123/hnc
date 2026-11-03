@@ -1,13 +1,14 @@
 /* ==========================================================================
    声屿 SoundIsle · 播放器
-   纯前端模拟播放：进度、切歌、唱片转动、收藏标记
-   （第 4 天接入本地音频与歌词）
+   - 目录歌曲：模拟播放（进度、唱片转动、切歌）
+   - 本地文件：<audio> 真实播放（供 pages/local.html 使用）
+   - 收藏与最近播放写入 localStorage
    ========================================================================== */
 
 window.Player = (function () {
   "use strict";
 
-  const { $, ICON, fmtTime, toast } = window.App;
+  const { $, ICON, fmtTime, toast, fav, recent } = window.App;
 
   const state = {
     queue: [],
@@ -16,11 +17,14 @@ window.Player = (function () {
     playing: false,
     time: 0,
     duration: 0,
-    liked: false
+    liked: false,
+    volume: 0.7
   };
 
   let el = null;
   let timer = null;
+  let audio = null;
+  let baseTitle = "声屿 SoundIsle";
 
   const TEMPLATE = [
     '<footer class="player" aria-label="播放器">',
@@ -62,7 +66,7 @@ window.Player = (function () {
     '      <button class="icon-btn" id="volBtn" title="音量" aria-label="音量">',
     '        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4l-4-3.2H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6"/><path d="M18 6.5a7.6 7.6 0 0 1 0 11"/></svg>',
     "      </button>",
-    '      <div class="vol-bar" id="volBar"><i id="volFill"></i></div>',
+    '      <div class="vol-bar" id="volBar"><i id="volFill" style="width:70%"></i></div>',
     "    </div>",
     '    <button class="icon-btn" id="queueBtn" title="播放列表" aria-label="播放列表">',
     '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h12M4 12h12M4 17h7"/><path d="M18 15.5v4.2"/><circle cx="19.6" cy="14.6" r="1.4"/></svg>',
@@ -76,23 +80,17 @@ window.Player = (function () {
 
   function cache() {
     el = {
-      cover: $("#npCover"),
-      title: $("#npTitle"),
-      artist: $("#npArtist"),
-      like: $("#likeBtn"),
-      play: $("#playBtn"),
-      prev: $("#prevBtn"),
-      next: $("#nextBtn"),
-      shuffle: $("#shuffleBtn"),
-      repeat: $("#repeatBtn"),
-      timeNow: $("#timeNow"),
-      timeTotal: $("#timeTotal"),
-      bar: $("#bar"),
-      fill: $("#barFill"),
-      vol: $("#volBar"),
-      volFill: $("#volFill"),
-      volBtn: $("#volBtn")
+      cover: $("#npCover"), title: $("#npTitle"), artist: $("#npArtist"),
+      like: $("#likeBtn"), play: $("#playBtn"), prev: $("#prevBtn"), next: $("#nextBtn"),
+      shuffle: $("#shuffleBtn"), repeat: $("#repeatBtn"),
+      timeNow: $("#timeNow"), timeTotal: $("#timeTotal"),
+      bar: $("#bar"), fill: $("#barFill"),
+      vol: $("#volBar"), volFill: $("#volFill"), volBtn: $("#volBtn")
     };
+  }
+
+  function isCatalog(track) {
+    return !!(track && track.id && window.DATA && DATA.song(track.id));
   }
 
   function render() {
@@ -109,45 +107,96 @@ window.Player = (function () {
     el.bar.setAttribute("aria-valuenow", String(Math.round(pct)));
 
     const heroDisc = document.getElementById("heroDisc");
-    if (heroDisc) {
-      heroDisc.style.animationPlayState = state.playing ? "running" : "paused";
-    }
-    document.title = (t && state.playing ? "▶ " : "") + "声屿 SoundIsle · 发现音乐";
+    if (heroDisc) heroDisc.style.animationPlayState = state.playing ? "running" : "paused";
+
+    document.title = (t && state.playing ? "▶ " : "") + baseTitle;
   }
 
+  function renderLike() {
+    if (!el) return;
+    el.like.innerHTML = state.liked ? ICON.heartFill : ICON.heart;
+    el.like.classList.toggle("on", state.liked);
+    el.like.setAttribute("aria-pressed", String(state.liked));
+  }
+
+  /* ----------------------------- 计时 ----------------------------- */
   function stopTimer() {
     clearInterval(timer);
     timer = null;
+  }
+
+  function handleEnd() {
+    if (state.queue.length > 1) {
+      next(true);
+      return;
+    }
+    state.time = 0;
+    state.playing = false;
+    if (audio) audio.pause();
+    render();
   }
 
   function startTimer() {
     stopTimer();
     timer = setInterval(() => {
       if (!state.playing) return;
-      state.time += 1;
-      if (state.time >= state.duration) {
-        if (state.queue.length > 1) {
-          next(true);
-          return;
-        }
-        state.time = 0;
-        state.playing = false;
+      if (audio) {
+        state.time = audio.currentTime || 0;
+        if (audio.duration && isFinite(audio.duration)) state.duration = audio.duration;
+        render();
+        return;
       }
+      state.time += 1;
+      if (state.time >= state.duration) { handleEnd(); return; }
       render();
-    }, 1000);
+    }, 500);
   }
 
+  /* ----------------------------- 音频 ----------------------------- */
+  function teardownAudio() {
+    if (!audio) return;
+    audio.pause();
+    audio.removeAttribute("src");
+    audio = null;
+  }
+
+  function setupAudio(src) {
+    teardownAudio();
+    audio = new Audio();
+    audio.preload = "metadata";
+    audio.volume = state.volume;
+    audio.addEventListener("loadedmetadata", () => {
+      if (audio && isFinite(audio.duration)) {
+        state.duration = audio.duration;
+        render();
+      }
+    });
+    audio.addEventListener("ended", handleEnd);
+    audio.addEventListener("error", () => toast("音频无法播放，可能格式不受支持"));
+    audio.src = src;
+  }
+
+  /* ----------------------------- 对外 API ----------------------------- */
   function load(track, options) {
     const opts = options || {};
     state.track = track;
     state.duration = track.duration || 240;
     state.time = 0;
     state.playing = opts.autoplay !== false;
-    state.liked = false;
-    el.like.classList.remove("on");
-    el.like.setAttribute("aria-pressed", "false");
+    state.liked = isCatalog(track) ? fav.hasSong(track.id) : false;
+
+    if (track.src) setupAudio(track.src); else teardownAudio();
+    if (audio && state.playing) {
+      const p = audio.play();
+      if (p && p.catch) p.catch(() => { state.playing = false; render(); });
+    }
+
+    if (isCatalog(track) && state.playing) recent.add(track.id);
+
     render();
-    if (state.playing) startTimer();
+    renderLike();
+    if (state.playing) startTimer(); else stopTimer();
+    return state;
   }
 
   function setQueue(tracks, index, autoplay) {
@@ -159,24 +208,33 @@ window.Player = (function () {
 
   function toggle() {
     if (!state.track) {
-      const first = (window.DATA && window.DATA.hero && window.DATA.hero.track) || null;
-      if (first) load(first);
+      const hero = window.DATA ? DATA.song(DATA.hero.trackId) : null;
+      if (hero) load(hero);
       return;
     }
     state.playing = !state.playing;
+    if (audio) {
+      if (state.playing) {
+        const p = audio.play();
+        if (p && p.catch) p.catch(() => { state.playing = false; render(); });
+      } else {
+        audio.pause();
+      }
+    }
+    if (state.playing && isCatalog(state.track)) recent.add(state.track.id);
     if (state.playing) startTimer(); else stopTimer();
     render();
   }
 
   function next(auto) {
-    if (!state.queue.length) return;
+    if (!state.queue.length) { toast("播放列表是空的"); return; }
     state.index = (state.index + 1) % state.queue.length;
     load(state.queue[state.index], { autoplay: true });
     if (!auto) toast("下一首：" + state.track.title);
   }
 
   function prev() {
-    if (!state.queue.length) return;
+    if (!state.queue.length) { toast("播放列表是空的"); return; }
     state.index = (state.index - 1 + state.queue.length) % state.queue.length;
     load(state.queue[state.index], { autoplay: true });
     toast("上一首：" + state.track.title);
@@ -184,7 +242,9 @@ window.Player = (function () {
 
   function seek(pct) {
     if (!state.track) return;
-    state.time = Math.round(Math.max(0, Math.min(1, pct)) * state.duration);
+    const ratio = Math.max(0, Math.min(1, pct));
+    state.time = Math.round(ratio * state.duration);
+    if (audio && isFinite(audio.duration)) audio.currentTime = ratio * audio.duration;
     render();
   }
 
@@ -198,15 +258,17 @@ window.Player = (function () {
       seek((e.clientX - rect.left) / rect.width);
     });
     el.bar.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") { seek(Math.min(1, state.time / state.duration + 0.02)); e.preventDefault(); }
-      if (e.key === "ArrowLeft") { seek(Math.max(0, state.time / state.duration - 0.02)); e.preventDefault(); }
+      if (e.key === "ArrowRight") { seek(state.time / state.duration + 0.02); e.preventDefault(); }
+      if (e.key === "ArrowLeft") { seek(state.time / state.duration - 0.02); e.preventDefault(); }
     });
 
     el.like.addEventListener("click", () => {
-      state.liked = !state.liked;
-      el.like.classList.toggle("on", state.liked);
-      el.like.setAttribute("aria-pressed", String(state.liked));
+      const t = state.track;
+      if (!isCatalog(t)) { toast("本地文件暂不支持收藏"); return; }
+      state.liked = fav.toggleSong(t.id);
+      renderLike();
       toast(state.liked ? "已加入「我的收藏」" : "已取消收藏");
+      document.dispatchEvent(new CustomEvent("fav:change"));
     });
 
     el.repeat.addEventListener("click", () => {
@@ -217,21 +279,23 @@ window.Player = (function () {
 
     el.shuffle.addEventListener("click", () => {
       if (!state.queue.length) { toast("先播放一首歌吧"); return; }
-      const i = Math.floor(Math.random() * state.queue.length);
-      state.index = i;
-      load(state.queue[i], { autoplay: true });
+      state.index = Math.floor(Math.random() * state.queue.length);
+      load(state.queue[state.index], { autoplay: true });
       toast("随机播放：" + state.track.title);
     });
 
     el.volBtn.addEventListener("click", () => {
-      const muted = el.volFill.style.width === "0%";
-      el.volFill.style.width = muted ? "62%" : "0%";
-      el.volBtn.classList.toggle("on", muted);
+      const muted = state.volume > 0;
+      state.volume = muted ? 0 : 0.7;
+      if (audio) audio.volume = state.volume;
+      el.volFill.style.width = (state.volume * 100) + "%";
+      el.volBtn.classList.toggle("on", !muted);
     });
     el.vol.addEventListener("click", (e) => {
       const rect = el.vol.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      el.volFill.style.width = (pct * 100) + "%";
+      state.volume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      if (audio) audio.volume = state.volume;
+      el.volFill.style.width = (state.volume * 100) + "%";
     });
 
     document.addEventListener("keydown", (e) => {
@@ -243,17 +307,14 @@ window.Player = (function () {
   function mount() {
     const root = document.getElementById("playerRoot");
     if (!root) return;
+    baseTitle = document.title;
     root.innerHTML = TEMPLATE;
     cache();
     bind();
 
-    // 初始展示首屏曲目，但不自动播放
-    const initial = window.DATA && window.DATA.hero && window.DATA.hero.track;
-    if (initial) {
-      load(initial, { autoplay: false });
-    } else {
-      render();
-    }
+    const hero = window.DATA ? DATA.song(DATA.hero.trackId) : null;
+    if (hero) load(hero, { autoplay: false });
+    else render();
   }
 
   if (document.readyState === "loading") {
@@ -262,14 +323,5 @@ window.Player = (function () {
     mount();
   }
 
-  return {
-    state,
-    load,
-    setQueue,
-    toggle,
-    next,
-    prev,
-    seek,
-    mount
-  };
+  return { state, load, setQueue, toggle, next, prev, seek, mount };
 })();

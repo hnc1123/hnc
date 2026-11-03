@@ -1,170 +1,100 @@
 /* ==========================================================================
    声屿 SoundIsle · 首页逻辑
-   渲染推荐歌单与榜单、首屏交互、导航占位
+   渲染推荐歌单与榜单；点击卡片进入歌单详情
    ========================================================================== */
 
 (function () {
   "use strict";
 
-  const { $, $$, esc, fmtTime, toast, ICON, todo } = window.App;
+  const { $, esc, fmtTime, toast, url, playlistCard } = window.App;
   const D = window.DATA;
 
   /* ----------------------------- 推荐歌单 ----------------------------- */
   function renderPlaylists() {
-    const grid = $("#playlistGrid");
-    if (!grid) return;
-
-    grid.innerHTML = D.playlists.map((p) => (
-      '<article class="card" data-playlist="' + esc(p.id) + '">' +
-        '<div class="cover ' + esc(p.cover) + '">' +
-          '<span class="plays num">' + ICON.play + esc(p.plays) + "</span>" +
-          '<button class="play" data-play aria-label="播放歌单 ' + esc(p.title) + '">' + ICON.play + "</button>" +
-        "</div>" +
-        '<p class="card-title">' + esc(p.title) + "</p>" +
-        '<p class="card-meta">' + esc(p.author) + ' <span class="tag">' + esc(p.tag) + "</span></p>" +
-      "</article>"
-    )).join("");
+    $("#playlistGrid").innerHTML = D.playlists.map(playlistCard).join("");
   }
 
   /* ----------------------------- 排行榜 ----------------------------- */
   function renderCharts() {
     const wrap = $("#chartsGrid");
-    if (!wrap) return;
-
-    wrap.innerHTML = D.charts.map((chart) => (
-      '<div class="panel" data-chart="' + esc(chart.id) + '">' +
-        '<div class="panel-head">' +
-          '<span class="spark' + (chart.id === "fresh" ? " violet" : "") + '">' + (chart.icon === "star" ? ICON.star : ICON.bolt) + "</span>" +
-          "<h3>" + esc(chart.title) + "</h3>" +
-          '<a href="#" data-more="' + esc(chart.title) + '">更多</a>' +
-        "</div>" +
-        chart.songs.map((s, i) => (
-          '<div class="row" data-song="' + esc(s.id) + '" data-index="' + i + '">' +
-            '<span class="idx">' + (i + 1) + "</span>" +
-            '<div class="song"><b>' + esc(s.title) + "</b><span>" + esc(s.artist) + "</span></div>" +
-            '<span class="trend ' + esc(s.trendType) + '">' + esc(s.trend) + "</span>" +
-            '<span class="dur num">' + fmtTime(s.duration) + "</span>" +
-          "</div>"
-        )).join("") +
-      "</div>"
-    )).join("");
+    wrap.innerHTML = D.charts.map((chart) => {
+      const songs = D.songList(chart.songIds);
+      return (
+        '<div class="panel" data-chart="' + esc(chart.id) + '">' +
+          '<div class="panel-head">' +
+            '<span class="spark' + (chart.id === "fresh" ? " violet" : "") + '">' +
+              (chart.icon === "star" ? window.App.ICON.star : window.App.ICON.bolt) +
+            "</span>" +
+            "<h3>" + esc(chart.title) + "</h3>" +
+            '<a href="' + url("pages/charts.html") + '">更多</a>' +
+          "</div>" +
+          songs.map((s, i) => {
+            const trend = D.trends[s.id] || { text: "—", type: "flat" };
+            return (
+              '<div class="row" data-index="' + i + '">' +
+                '<span class="idx">' + (i + 1) + "</span>" +
+                '<div class="song"><b>' + esc(s.title) + "</b><span>" + esc(s.artist) + "</span></div>" +
+                '<span class="trend ' + esc(trend.type) + '">' + esc(trend.text) + "</span>" +
+                '<span class="dur num">' + fmtTime(s.duration) + "</span>" +
+              "</div>"
+            );
+          }).join("") +
+        "</div>"
+      );
+    }).join("");
   }
 
-  /* 播放队列：首屏歌曲 + 两个榜单，保证切歌有内容 */
-  function buildQueue() {
-    const all = [D.hero.track];
-    D.charts.forEach((c) => c.songs.forEach((s) => all.push(s)));
-    return all;
-  }
-
-  function playSong(song, queue, index) {
-    Player.setQueue(queue, index, true);
-    toast("正在播放：" + song.title + " — " + song.artist);
+  /* 首屏队列：本期歌曲 + 两个榜单 */
+  function heroQueue() {
+    return [D.song(D.hero.trackId)].concat(D.songList(D.charts[0].songIds));
   }
 
   /* ----------------------------- 事件 ----------------------------- */
   function bindPlaylists() {
-    const grid = $("#playlistGrid");
-    if (!grid) return;
-
-    grid.addEventListener("click", (e) => {
-      const card = e.target.closest(".card");
+    $("#playlistGrid").addEventListener("click", (e) => {
+      const card = e.target.closest("[data-playlist]");
       if (!card) return;
-      const id = card.dataset.playlist;
-      const list = D.playlists.find((p) => p.id === id);
+      const list = D.playlist(card.dataset.playlist);
       if (!list) return;
 
       if (e.target.closest("[data-play]")) {
         e.stopPropagation();
-        const queue = buildQueue();
-        Player.setQueue(queue, 0, true);
+        Player.setQueue(D.playlistSongs(list.id), 0, true);
         toast("开始播放歌单：" + list.title);
         return;
       }
-      todo("歌单「" + list.title + "」");
+      location.href = url("pages/playlist.html?id=" + encodeURIComponent(list.id));
     });
   }
 
   function bindCharts() {
-    const wrap = $("#chartsGrid");
-    if (!wrap) return;
-
-    wrap.addEventListener("click", (e) => {
-      const more = e.target.closest("[data-more]");
-      if (more) {
-        e.preventDefault();
-        todo("榜单「" + more.dataset.more + "」");
-        return;
-      }
+    $("#chartsGrid").addEventListener("click", (e) => {
       const row = e.target.closest(".row");
       if (!row) return;
       const panel = row.closest(".panel");
-      const chart = D.charts.find((c) => c.id === panel.dataset.chart);
+      const chart = D.chart(panel.dataset.chart);
       if (!chart) return;
+      const songs = D.songList(chart.songIds);
       const i = Number(row.dataset.index);
-      playSong(chart.songs[i], chart.songs, i);
+      Player.setQueue(songs, i, true);
+      toast("正在播放：" + songs[i].title + " — " + songs[i].artist);
     });
   }
 
   function bindHero() {
-    const dateEl = $("#heroDate");
-    if (dateEl) {
-      const now = new Date();
-      dateEl.textContent = (now.getMonth() + 1) + " 月 " + now.getDate() + " 日";
-    }
+    const now = new Date();
+    $("#heroDate").textContent = (now.getMonth() + 1) + " 月 " + now.getDate() + " 日";
+    $("#heroDesc").textContent = D.hero.desc;
 
-    const playBtn = $("#heroPlay");
-    if (playBtn) {
-      playBtn.addEventListener("click", () => {
-        const queue = buildQueue();
-        Player.setQueue(queue, 0, true);
-        toast("开始播放：深夜电台 Vol.24");
-      });
-    }
-
-    const favBtn = $("#heroFav");
-    if (favBtn) {
-      favBtn.addEventListener("click", () => {
-        const on = favBtn.classList.toggle("on");
-        toast(on ? "已收藏：深夜电台 Vol.24" : "已取消收藏");
-      });
-    }
-  }
-
-  function bindNav() {
-    $$(".nav-item").forEach((item) => {
-      item.addEventListener("click", (e) => {
-        const page = item.dataset.page;
-        if (!page) return;
-        e.preventDefault();
-        $$(".nav-item").forEach((n) => n.classList.remove("active"));
-        item.classList.add("active");
-        todo(page);
-      });
+    $("#heroPlay").addEventListener("click", () => {
+      Player.setQueue(heroQueue(), 0, true);
+      toast("开始播放：深夜电台 Vol.24");
     });
-  }
 
-  function bindSearch() {
-    const input = $("#searchInput");
-    if (!input) return;
-    input.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
-      const q = input.value.trim();
-      if (!q) return;
-      todo("搜索「" + q + "」");
-      input.blur();
+    $("#heroFav").addEventListener("click", () => {
+      const on = $("#heroFav").classList.toggle("on");
+      toast(on ? "已收藏：深夜电台 Vol.24" : "已取消收藏");
     });
-  }
-
-  function bindMisc() {
-    const back = $("#backBtn");
-    if (back) back.addEventListener("click", () => history.back());
-
-    const login = $("#loginBtn");
-    if (login) login.addEventListener("click", () => toast("登录功能为纯前端模拟，第 7 天补充"));
-
-    const avatar = $(".avatar");
-    if (avatar) avatar.addEventListener("click", () => toast("访客模式 · 收藏保存在本机"));
   }
 
   function init() {
@@ -173,9 +103,6 @@
     bindPlaylists();
     bindCharts();
     bindHero();
-    bindNav();
-    bindSearch();
-    bindMisc();
   }
 
   if (document.readyState === "loading") {

@@ -1,0 +1,264 @@
+/* ==========================================================================
+   声屿 SoundIsle · 内页
+   页面标题 / 歌单详情 / 歌曲列表 / 空状态 / 分页签 / 本地导入
+   ========================================================================== */
+
+.page-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.page-head h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: .6px;
+}
+.page-head .sub { font-size: 12px; color: var(--text-3); }
+.page-head .actions { margin-left: auto; display: flex; gap: 10px; }
+
+/* ----------------------------- 歌单详情头部 ----------------------------- */
+.detail {
+  display: grid;
+  grid-template-columns: 228px minmax(0, 1fr);
+  gap: 30px;
+  align-items: end;
+  padding: 6px 2px 26px;
+}
+.detail-cover {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, .45);
+}
+.detail-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(115deg, rgba(255, 255, 255, .06) 0 1px, transparent 1px 14px);
+  mix-blend-mode: overlay;
+}
+[data-theme="light"] .detail-cover { box-shadow: 0 20px 40px rgba(15, 23, 42, .16); }
+
+.detail-info { min-width: 0; }
+.detail-info .kicker {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+.detail-info h1 {
+  margin: 10px 0 12px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  line-height: 1.25;
+}
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.detail-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); }
+.detail-desc {
+  margin: 14px 0 20px;
+  max-width: 640px;
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--text-2);
+}
+.detail-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ----------------------------- 歌曲列表 ----------------------------- */
+.track-list {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(18, 22, 39, .6), rgba(11, 14, 23, .45));
+  overflow: hidden;
+}
+[data-theme="light"] .track-list { background: #fff; }
+
+.track {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 170px 60px 40px;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background-color .15s;
+}
+.track:last-child { border-bottom: 0; }
+.track:hover { background: rgba(255, 255, 255, .045); }
+[data-theme="light"] .track:hover { background: rgba(15, 23, 42, .035); }
+.track.playing { background: rgba(60, 227, 196, .07); }
+.track.playing .t-main b { color: var(--mint); }
+
+.t-idx {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+.t-main { min-width: 0; }
+.t-main b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-main span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-album {
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.t-dur { font-size: 11px; color: var(--text-3); text-align: right; }
+.t-like {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  transition: color .15s, background-color .15s;
+}
+.t-like svg { width: 15px; height: 15px; }
+.t-like:hover { color: var(--text); background: rgba(255, 255, 255, .08); }
+.t-like.on { color: var(--pink); }
+[data-theme="light"] .t-like.on { color: #d63f74; }
+
+/* ----------------------------- 空状态 ----------------------------- */
+.empty {
+  padding: 64px 24px;
+  text-align: center;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  color: var(--text-3);
+}
+.empty-art {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 18px;
+  border-radius: 24px;
+  background: var(--grad);
+  opacity: .85;
+  display: grid;
+  place-items: center;
+  color: #051016;
+  box-shadow: 0 18px 36px rgba(90, 190, 200, .22);
+}
+.empty-art svg { width: 34px; height: 34px; }
+.empty h3 { font-size: 15px; color: var(--text); margin-bottom: 8px; }
+.empty p { font-size: 12.5px; line-height: 1.8; margin-bottom: 20px; }
+
+/* ----------------------------- 分页签 / 统计 ----------------------------- */
+.tabs { display: flex; gap: 8px; margin: 4px 0 18px; }
+.tab {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 12.5px;
+  transition: color .16s, border-color .16s, background-color .16s;
+}
+.tab:hover { color: var(--text); border-color: var(--line-2); }
+.tab.active {
+  color: var(--mint);
+  border-color: rgba(60, 227, 196, .4);
+  background: rgba(60, 227, 196, .1);
+}
+[data-theme="light"] .tab.active { color: #0a8f7c; border-color: rgba(11, 185, 163, .4); background: rgba(11, 185, 163, .08); }
+
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+.stat {
+  min-width: 156px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(18, 22, 39, .6), rgba(11, 14, 23, .4));
+}
+[data-theme="light"] .stat { background: #fff; }
+.stat b { display: block; font-size: 24px; font-weight: 700; letter-spacing: .5px; }
+.stat span { display: block; margin-top: 4px; font-size: 11px; color: var(--text-3); }
+
+/* ----------------------------- 本地音乐 ----------------------------- */
+.dropzone {
+  padding: 46px 24px;
+  text-align: center;
+  border: 2px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: border-color .18s, background-color .18s;
+}
+.dropzone:hover, .dropzone.drag {
+  border-color: rgba(60, 227, 196, .55);
+  background: rgba(60, 227, 196, .05);
+}
+.dropzone .dz-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(60, 227, 196, .12);
+  color: var(--mint);
+}
+.dropzone .dz-icon svg { width: 26px; height: 26px; }
+.dropzone h3 { font-size: 15px; margin-bottom: 8px; }
+.dropzone p { font-size: 12px; color: var(--text-3); }
+.dropzone .hint { margin-top: 10px; font-size: 11px; color: var(--text-3); }
+
+.local-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.local-bar .count { font-size: 12px; color: var(--text-3); }
+.local-bar .actions { margin-left: auto; display: flex; gap: 8px; }
+
+.file-size {
+  font-size: 10.5px;
+  color: var(--text-3);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* ----------------------------- 响应式 ----------------------------- */
+@media (max-width: 1100px) {
+  .detail { grid-template-columns: 180px minmax(0, 1fr); gap: 22px; }
+  .detail-info h1 { font-size: 26px; }
+}
+@media (max-width: 900px) {
+  .track { grid-template-columns: 36px minmax(0, 1fr) 52px 36px; }
+  .t-album { display: none; }
+  .detail { grid-template-columns: 1fr; align-items: start; }
+  .detail-cover { width: 180px; }
+}
+@media (max-width: 640px) {
+  .detail-info h1 { font-size: 22px; }
+  .page-head h1 { font-size: 20px; }
+}
