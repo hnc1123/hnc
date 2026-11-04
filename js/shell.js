@@ -111,12 +111,13 @@
 
     const input = $("#searchInput");
     if (input) {
+      const initial = new URLSearchParams(location.search).get("q");
+      if (initial) input.value = initial;
       input.addEventListener("keydown", (e) => {
         if (e.key !== "Enter") return;
         const q = input.value.trim();
         if (!q) return;
-        toast("搜索「" + q + "」将在第 5 天开放");
-        input.blur();
+        location.href = url("pages/search.html?q=" + encodeURIComponent(q));
       });
     }
   }

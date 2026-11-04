@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="声屿 SoundIsle 搜索页，支持单曲、歌单与歌手检索。">
+  <title>搜索 · 声屿 SoundIsle</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="search" data-base="../">
+  <div class="app">
+    <aside class="sidebar" id="sidebarMount"></aside>
+    <main class="main">
+      <header class="topbar" id="topbarMount"></header>
+      <div class="scroll">
+        <div class="search-head">
+          <h1>搜索</h1>
+          <form class="search-form" id="searchForm" role="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.4"/><path d="M16 16l4 4"/>
+            </svg>
+            <input id="qInput" name="q" type="search" placeholder="搜索歌曲、歌手或歌单" autocomplete="off" aria-label="搜索关键词">
+            <button class="btn-primary" type="submit">搜索</button>
+          </form>
+        </div>
+
+        <div id="searchBody"></div>
+
+        <div class="page-foot">
+          <span>声屿 SoundIsle · 静态演示站点</span>
+          <span>搜索在本地数据中完成，不请求服务器</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="playerRoot"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/player.js"></script>
+  <script src="../js/search.js"></script>
+</body>
+</html>
