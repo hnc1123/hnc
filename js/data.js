@@ -105,6 +105,34 @@ window.DATA = (function () {
     return p ? songList(p.songIds) : [];
   }
 
+  /* ----------------------------- 歌手 / 专辑（由曲库推导） ----------------------------- */
+  const artistIndex = {};
+  songs.forEach((s) => {
+    if (!artistIndex[s.artist]) artistIndex[s.artist] = { name: s.artist, songs: [], cover: s.cover };
+    artistIndex[s.artist].songs.push(s);
+  });
+
+  Object.keys(artistIndex).forEach((name) => {
+    const a = artistIndex[name];
+    const map = {};
+    a.songs.forEach((s) => {
+      if (!map[s.album]) map[s.album] = { name: s.album, artist: name, cover: s.cover, songs: [] };
+      map[s.album].songs.push(s);
+    });
+    a.albums = Object.keys(map).map((k) => map[k]);
+    a.duration = a.songs.reduce((n, s) => n + s.duration, 0);
+  });
+
+  function artists() { return Object.keys(artistIndex).map((k) => artistIndex[k]); }
+  function artist(name) { return artistIndex[name] || null; }
+
+  function albums() {
+    return artists().reduce((all, a) => all.concat(a.albums), []);
+  }
+  function album(name, artistName) {
+    return albums().find((al) => al.name === name && (!artistName || al.artist === artistName)) || null;
+  }
+
   return {
     site: { name: "声屿", en: "SoundIsle", slogan: "把喜欢的歌，留在自己的岛上" },
     songs,
@@ -119,6 +147,10 @@ window.DATA = (function () {
     songList,
     playlist,
     playlistSongs,
-    chart
+    chart,
+    artists,
+    artist,
+    albums,
+    album
   };
 })();

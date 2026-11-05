@@ -127,13 +127,6 @@
       (results.lists.length ? renderLists() : "");
   }
 
-  function playArtist(name) {
-    const songs = D.songs.filter((s) => s.artist === name);
-    if (!songs.length) return;
-    Player.setQueue(songs, 0, true);
-    toast("开始播放：" + name + " 的 " + songs.length + " 首歌");
-  }
-
   function bind() {
     const form = $("#searchForm");
     form.addEventListener("submit", (e) => {
@@ -155,7 +148,7 @@
 
       const artist = e.target.closest("[data-artist]");
       if (artist) {
-        playArtist(artist.dataset.artist);
+        location.href = url("pages/artist.html?name=" + encodeURIComponent(artist.dataset.artist));
         return;
       }
 
