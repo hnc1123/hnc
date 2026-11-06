@@ -1,85 +1,121 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="声屿 SoundIsle —— 一个纯静态的音乐站点演示，所有内容均为虚构。">
-  <title>声屿 SoundIsle · 发现音乐</title>
+  <meta name="description" content="留白 WHITE SPACE —— 一个关于自然、城市与静物的摄影作品集，纯静态演示站点。">
+  <title>留白 WHITE SPACE · 摄影作品集</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/pages.css">
 </head>
 <body data-page="home" data-base="">
-  <div class="app">
-    <aside class="sidebar" id="sidebarMount"></aside>
+  <header id="navMount"></header>
 
-    <main class="main">
-      <header class="topbar" id="topbarMount"></header>
-
-      <div class="scroll" id="pageScroll">
-        <section class="hero">
-          <div class="hero-copy">
-            <span class="eyebrow"><i></i>每日精选 · <span id="heroDate">11 月 3 日</span></span>
-            <h1>把城市调成静音，<br>只留一点<em>回声</em>。</h1>
-            <p id="heroDesc">深夜电台第 24 期：九首适合独自走回家的歌，从霓虹路口一路放到楼下。</p>
-            <div class="hero-actions">
-              <button class="btn-primary" id="heroPlay">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-                立即播放
-              </button>
-              <button class="btn-line" id="heroFav">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19.5s-7-4.3-7-9.1A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.4c0 4.8-7 9.1-7 9.1z"/></svg>
-                收藏本期
-              </button>
-            </div>
-          </div>
-          <div class="hero-visual" aria-hidden="true">
-            <div class="disc-wrap">
-              <div class="disc-glow"></div>
-              <div class="disc" id="heroDisc"></div>
-              <div class="disc-label">声屿</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="section">
-          <div class="section-head">
-            <h2>推荐歌单</h2>
-            <span class="sub">根据你的口味，每天更新</span>
-            <a class="more" href="pages/playlists.html">查看全部
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-            </a>
-          </div>
-          <div class="grid" id="playlistGrid"></div>
-        </section>
-
-        <section class="section">
-          <div class="section-head">
-            <h2>排行榜</h2>
-            <span class="sub">每小时更新</span>
-            <a class="more" href="pages/charts.html">完整榜单
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-            </a>
-          </div>
-          <div class="charts" id="chartsGrid"></div>
-        </section>
-
-        <div class="page-foot">
-          <span>声屿 SoundIsle · 静态演示站点</span>
-          <span>所有内容均为虚构，仅用于课程作业</span>
+  <main class="main">
+    <!-- 首屏 -->
+    <section class="hero">
+      <div class="hero-media">
+        <div class="frame" style="--a:#4a5461;--b:#14171d">
+          <img src="assets/photos/hero.jpg" alt="雾中的山脊" fetchpriority="high">
         </div>
       </div>
-    </main>
-  </div>
 
-  <div id="playerRoot"></div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">WHITE SPACE · PHOTOGRAPHY 2026</p>
+        <h1 class="hero-title">把光留在<br><em>空白</em>处</h1>
+        <p class="hero-lead">一个关于山、雾、夜行与静物的长期拍摄计划。照片大多拍摄于清晨和凌晨，光线很弱，需要等很久。</p>
+        <div class="hero-actions">
+          <a class="btn btn--solid" href="pages/gallery.html">浏览作品</a>
+          <a class="btn" href="#about">关于我</a>
+        </div>
+      </div>
+
+      <div class="hero-meta">2026 · 成都<br>自然 / 城市 / 静物</div>
+      <div class="scroll-hint" aria-hidden="true">SCROLL</div>
+    </section>
+
+    <!-- 精选系列 -->
+    <section class="section" id="series">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2>精选系列</h2>
+          <div class="side"><span class="idx">01</span><span>SELECTED SERIES</span></div>
+        </div>
+        <div class="series-grid" id="seriesGrid"></div>
+      </div>
+    </section>
+
+    <!-- 最新作品 -->
+    <section class="section" id="works">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2>最新作品</h2>
+          <div class="side"><span class="idx">02</span><a href="pages/gallery.html">全部作品 →</a></div>
+        </div>
+        <div class="works-grid" id="worksGrid"></div>
+      </div>
+    </section>
+
+    <!-- 拍摄笔记 -->
+    <section class="section" id="lessons">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2>拍摄笔记</h2>
+          <div class="side"><span class="idx">03</span><a href="pages/teach.html">全部 9 条 →</a></div>
+        </div>
+        <div class="teach-cards">
+          <a class="teach-card reveal" href="pages/teach.html">
+            <span class="n">01</span>
+            <h3>构图</h3>
+            <p>三分法、引导线、负空间。先把画面切好，再考虑别的。</p>
+            <span class="more">3 条笔记 →</span>
+          </a>
+          <a class="teach-card reveal" href="pages/teach.html">
+            <span class="n">02</span>
+            <h3>光线</h3>
+            <p>低照度、混合色温、侧逆光。光从哪来，决定照片长什么样。</p>
+            <span class="more">3 条笔记 →</span>
+          </a>
+          <a class="teach-card reveal" href="pages/teach.html">
+            <span class="n">03</span>
+            <h3>参数</h3>
+            <p>光圈、快门、ISO。三个数字够用了，剩下的靠多拍。</p>
+            <span class="more">3 条笔记 →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 关于 -->
+    <section class="about" id="about">
+      <div class="section-inner about-grid">
+        <div class="about-portrait reveal">
+          <div class="frame" style="--a:#4a3d34;--b:#171310">
+            <img src="assets/photos/portrait.jpg" alt="摄影师肖像" loading="lazy">
+          </div>
+        </div>
+        <div class="about-text reveal">
+          <p class="eyebrow">ABOUT</p>
+          <h2>拍照是我和世界<br>保持距离的方式。</h2>
+          <p>我叫林深，常住在成都，拍山、拍夜里的街道，也拍桌面上放了很久的东西。习惯用定焦镜头，一次只带一台相机。</p>
+          <p>不追求决定性的瞬间，更在意光线变暗之前的那几分钟。这个站点收录了 2024 年至今的四个系列。</p>
+          <div class="about-facts">
+            <div><b>4</b><span>系列</span></div>
+            <div><b>18</b><span>作品</span></div>
+            <div><b>2024</b><span>开始拍摄</span></div>
+          </div>
+          <p style="margin-top:28px"><a class="btn" href="pages/about.html">了解更多</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footerMount"></footer>
 
   <script src="js/data.js"></script>
   <script src="js/common.js"></script>
   <script src="js/shell.js"></script>
-  <script src="js/player.js"></script>
   <script src="js/home.js"></script>
 </body>
 </html>
