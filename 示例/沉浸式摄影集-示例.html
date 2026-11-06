@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>留白 WHITE SPACE · 沉浸式摄影集（示例）</title>
+<style>
+/* ============================================================
+   留白 WHITE SPACE · 单文件示例 v0.1
+   深色沉浸式摄影集 + 摄影入门教学
+   图片位置先用同色系渐变占位，放入真实照片即可替换
+   ============================================================ */
+
+:root{
+  --bg:#0a0a0a; --bg2:#0d0d0e; --surface:#131314;
+  --line:rgba(255,255,255,.13); --line-soft:rgba(255,255,255,.07);
+  --text:#ece9e3; --muted:#918d85; --dim:#5f5c56; --accent:#c9a86a;
+  --serif:"Songti SC","STSong","SimSun",Georgia,"Times New Roman",serif;
+  --sans:"PingFang SC","Microsoft YaHei UI","Segoe UI",system-ui,-apple-system,sans-serif;
+  --max:1360px; --gutter:40px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-size:14px; line-height:1.7; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p{margin:0}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+::selection{background:var(--accent);color:#0a0a0a}
+:focus-visible{outline:1px solid var(--accent);outline-offset:4px}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:#0a0a0a}
+::-webkit-scrollbar-thumb{background:#26262a;border:3px solid #0a0a0a;border-radius:8px}
+
+.eyebrow{font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+
+/* 颗粒质感 */
+.grain::after{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:3;
+  opacity:.055; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------------- 按钮 ---------------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  height:46px; padding:0 26px; border:1px solid var(--line);
+  font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+  transition:background-color .25s,border-color .25s,color .25s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn--solid{background:var(--text);border-color:var(--text);color:#0a0a0a}
+.btn--solid:hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+.btn--sm{height:36px;padding:0 16px;font-size:10px;letter-spacing:.16em}
+.btn svg{width:14px;height:14px;flex:none}
+
+/* ---------------- 顶部阅读进度 ---------------- */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:2px;width:0;z-index:80;
+  background:linear-gradient(90deg,var(--accent),#e8d6ae);
+}
+
+/* ---------------- 导航 ---------------- */
+.nav{
+  position:fixed; inset:0 0 auto 0; z-index:60;
+  border-bottom:1px solid transparent;
+  transition:background-color .35s,border-color .35s,backdrop-filter .35s;
+}
+.nav.is-solid{background:rgba(10,10,10,.86);border-color:var(--line-soft);backdrop-filter:blur(14px)}
+.nav-inner{
+  max-width:var(--max); margin:0 auto; padding:22px var(--gutter);
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+}
+.brand{display:flex; align-items:baseline; gap:12px}
+.brand .zh{font-family:var(--serif);font-size:21px;letter-spacing:.18em}
+.brand .en{font-size:9px;letter-spacing:.34em;color:var(--muted)}
+.nav-links{display:flex;align-items:center;gap:34px;margin-left:auto;margin-right:34px}
+.nav-links a{position:relative;padding:6px 0;font-size:12px;letter-spacing:.18em;color:var(--muted);transition:color .25s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--accent)}
+
+/* ---------------- 图片框（渐变占位） ---------------- */
+.frame{position:relative;overflow:hidden;background:#101012;isolation:isolate}
+.frame::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(120% 90% at 20% 10%,var(--a,#3a3e46),transparent 62%),
+    radial-gradient(110% 100% at 85% 90%,var(--b,#1a1c21),transparent 68%),
+    linear-gradient(135deg,rgba(255,255,255,.07),transparent 46%),
+    linear-gradient(160deg,#1e2024,#0e0e11);
+}
+.frame .fid{
+  position:absolute; top:14px; left:16px; z-index:2;
+  font-size:9.5px; letter-spacing:.22em; color:rgba(255,255,255,.4);
+}
+.frame .fglow{
+  position:absolute; inset:0; z-index:1;
+  background:radial-gradient(55% 45% at 72% 22%,rgba(255,255,255,.12),transparent 72%);
+}
+
+/* ---------------- 首屏 ---------------- */
+.hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:0 0 92px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg::before{
+  background:
+    radial-gradient(75% 55% at 68% 14%,var(--a,#4a5461),transparent 60%),
+    radial-gradient(60% 50% at 28% 42%,rgba(125,138,154,.18),transparent 65%),
+    radial-gradient(70% 70% at 10% 90%,var(--b,#14171d),transparent 60%),
+    linear-gradient(180deg,#181b21 0%,#0b0b0d 76%);
+}
+.hero-bg::after{
+  content:"";position:absolute;inset:0;z-index:2;
+  background:
+    linear-gradient(180deg,rgba(6,6,7,.3) 0%,rgba(6,6,7,.02) 34%,rgba(10,10,10,.9) 100%),
+    linear-gradient(90deg,rgba(6,6,7,.5),transparent 52%);
+}
+.hero-glow{
+  position:absolute; z-index:1; left:50%; top:-12%; width:min(900px,90vw); height:70vh;
+  transform:translateX(-30%);
+  background:radial-gradient(closest-side,rgba(201,168,106,.15),transparent 70%);
+  filter:blur(30px); pointer-events:none;
+}
+.hero-inner{position:relative;z-index:4;width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+.hero-title{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(46px,7.2vw,100px); line-height:1.05; letter-spacing:.02em;
+  margin:18px 0 26px;
+}
+.hero-title em{font-style:normal;color:var(--accent)}
+.hero-lead{max-width:440px;color:var(--muted);font-size:13px;line-height:2.1}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
+.hero-meta{
+  position:absolute;right:var(--gutter);bottom:96px;z-index:4;
+  text-align:right;font-size:10.5px;letter-spacing:.2em;color:var(--dim);line-height:2.2;
+}
+.hero-index{
+  position:absolute;right:var(--gutter);top:44%;transform:translateY(-50%);z-index:4;
+  display:flex;flex-direction:column;gap:15px;align-items:flex-end;
+}
+.hero-index button{display:flex;align-items:baseline;gap:12px;font-size:11px;letter-spacing:.2em;color:var(--dim);transition:color .25s}
+.hero-index button:hover{color:var(--text)}
+.hero-index i{font-family:var(--serif);font-style:normal;font-size:9px;letter-spacing:.1em;color:var(--accent);opacity:.75}
+.scroll-hint{
+  position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:4;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  font-size:9.5px;letter-spacing:.3em;color:var(--dim);
+}
+.scroll-hint::after{content:"";width:1px;height:42px;background:linear-gradient(180deg,var(--dim),transparent);animation:drop 2.4s ease-in-out infinite}
+@keyframes drop{0%,100%{opacity:.2;transform:scaleY(.6);transform-origin:top}50%{opacity:1;transform:scaleY(1);transform-origin:top}}
+
+/* ---------------- 区块 ---------------- */
+.section{padding:110px 0}
+section[id]{scroll-margin-top:76px}
+.flat .hero{min-height:720px}
+.section-inner{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+.section-head{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+  padding-bottom:18px;margin-bottom:40px;border-bottom:1px solid var(--line-soft);
+}
+.section-head h2{font-family:var(--serif);font-weight:400;font-size:30px;letter-spacing:.04em}
+.section-head .side{display:flex;align-items:baseline;gap:14px;font-size:10.5px;letter-spacing:.22em;color:var(--dim)}
+.section-head .idx{font-family:var(--serif);font-size:13px;color:var(--accent)}
+.section-lead{max-width:520px;margin:-18px 0 40px;color:var(--muted);font-size:12.5px;line-height:2}
+
+/* ---------------- 筛选按钮 ---------------- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:34px}
+.chip{
+  height:34px;padding:0 18px;border:1px solid var(--line);
+  font-size:10.5px;letter-spacing:.16em;color:var(--muted);
+  transition:color .25s,border-color .25s,background-color .25s;
+}
+.chip:hover{color:var(--text);border-color:rgba(255,255,255,.28)}
+.chip.is-on{color:#0a0a0a;background:var(--text);border-color:var(--text)}
+.chip .n{margin-left:7px;font-size:9px;opacity:.55}
+
+/* ---------------- 作品（瀑布流） ---------------- */
+.grid{columns:3;column-gap:22px}
+.work{display:block;text-align:left;cursor:zoom-in;break-inside:avoid;margin-bottom:22px}
+.work .frame{width:100%;background:#101012}
+.work .frame::after{
+  content:"";position:absolute;inset:0;z-index:2;
+  background:linear-gradient(180deg,rgba(5,5,6,.38),transparent 42%);
+  opacity:0;transition:opacity .35s;
+}
+.work:hover .frame::after{opacity:1}
+.work .view{
+  position:absolute;top:13px;right:14px;z-index:3;
+  font-size:9.5px;letter-spacing:.18em;color:#fff;
+  opacity:0;transform:translateY(-4px);transition:opacity .3s,transform .3s;
+}
+.work:hover .view{opacity:1;transform:none}
+.work figcaption{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px}
+.work b{font-family:var(--serif);font-weight:400;font-size:15px;letter-spacing:.04em}
+.work figcaption span{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+
+/* ---------------- 教学 ---------------- */
+.teach{border-top:1px solid var(--line-soft)}
+.teach-grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:90px;align-items:start}
+.teach-aside{position:sticky;top:110px}
+.teach-aside .side{display:flex;align-items:baseline;gap:12px;font-size:10.5px;letter-spacing:.22em;color:var(--dim)}
+.teach-aside .idx{font-family:var(--serif);font-size:13px;color:var(--accent)}
+.teach-aside h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.2vw,42px);line-height:1.34;margin:16px 0 18px;letter-spacing:.02em}
+.teach-aside .lead{color:var(--muted);font-size:12.5px;line-height:2.05}
+.tabs{display:flex;flex-direction:column;margin-top:32px;border-top:1px solid var(--line-soft)}
+.tab{
+  display:flex;align-items:baseline;gap:12px;width:100%;padding:13px 0;
+  border-bottom:1px solid var(--line-soft);text-align:left;
+  font-family:var(--serif);font-size:19px;letter-spacing:.06em;color:var(--muted);
+  transition:color .25s,padding-left .3s;
+}
+.tab .en{margin-left:auto;font-family:var(--sans);font-size:9px;letter-spacing:.22em;color:var(--dim)}
+.tab:hover{color:var(--text);padding-left:5px}
+.tab.is-on{color:var(--text)}
+.tab.is-on .en{color:var(--accent)}
+.teach-count{margin-top:16px;font-size:10px;letter-spacing:.2em;color:var(--dim)}
+
+.lessons{border-top:1px solid var(--line-soft)}
+.lesson{
+  display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:30px;align-items:start;
+  padding:28px 4px;border-bottom:1px solid var(--line-soft);
+  transition:background .3s,padding .3s;
+}
+.lesson:hover{background:linear-gradient(90deg,rgba(255,255,255,.035),transparent 72%);padding-left:14px}
+.lesson .num{font-family:var(--serif);font-size:25px;line-height:1;color:var(--accent);letter-spacing:.04em;padding-top:3px}
+.lesson h3{font-family:var(--serif);font-weight:400;font-size:23px;letter-spacing:.03em;margin-bottom:8px}
+.lesson p{color:var(--muted);font-size:12.5px;line-height:2;max-width:600px}
+.lesson .link{
+  display:inline-flex;align-items:center;gap:8px;margin-top:4px;white-space:nowrap;
+  font-size:10.5px;letter-spacing:.16em;color:var(--text);
+  border-bottom:1px solid var(--line);padding-bottom:3px;
+  transition:color .25s,border-color .25s;
+}
+.lesson .link:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ---------------- 关于 ---------------- */
+.about{padding:110px 0;border-top:1px solid var(--line-soft)}
+.about-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:70px;align-items:center}
+.about-grid h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.4vw,42px);line-height:1.42;margin:16px 0 22px}
+.about-grid p{color:var(--muted);font-size:13px;line-height:2.1;margin-bottom:16px}
+.about-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px;padding-top:24px;border-top:1px solid var(--line-soft)}
+.about-facts b{display:block;font-family:var(--serif);font-size:26px;font-weight:400;color:var(--accent)}
+.about-facts span{display:block;margin-top:4px;font-size:10px;letter-spacing:.18em;color:var(--dim)}
+
+/* ---------------- 页脚 ---------------- */
+.site-footer{border-top:1px solid var(--line-soft);padding:56px var(--gutter) 40px}
+.footer-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1.4fr .7fr .7fr;gap:40px}
+.footer-brand .zh{font-family:var(--serif);font-size:20px;letter-spacing:.18em}
+.footer-brand p{margin-top:12px;max-width:340px;color:var(--muted);font-size:12px;line-height:2}
+.footer-col h4{font-size:10px;font-weight:400;letter-spacing:.26em;color:var(--dim);margin-bottom:14px}
+.footer-col a{display:block;margin-bottom:8px;font-size:12.5px;color:var(--muted)}
+.footer-col a:hover{color:var(--accent)}
+.footer-bottom{
+  max-width:var(--max);margin:44px auto 0;padding-top:20px;border-top:1px solid var(--line-soft);
+  display:flex;justify-content:space-between;gap:16px;font-size:10.5px;letter-spacing:.08em;color:var(--dim);
+}
+
+/* ---------------- 沉浸模式 ---------------- */
+.viewer{
+  position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+  background:#060607;opacity:0;pointer-events:none;transition:opacity .35s ease;
+}
+.viewer.is-open{opacity:1;pointer-events:auto}
+.viewer-top{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:20px 26px;font-size:10.5px;letter-spacing:.26em;color:var(--muted);
+}
+.v-tools{display:flex;gap:10px}
+.v-btn{
+  height:34px;padding:0 16px;border:1px solid var(--line);
+  font-size:10px;letter-spacing:.16em;color:var(--muted);
+  transition:color .2s,border-color .2s,background-color .2s;
+}
+.v-btn:hover{color:var(--text);border-color:rgba(255,255,255,.3)}
+.v-btn.is-on{color:#0a0a0a;background:var(--accent);border-color:var(--accent)}
+.v-btn--close:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.v-stage{flex:1;min-height:0;display:grid;place-items:center;padding:4px 96px}
+.v-frame{
+  width:min(100%,1080px);height:100%;max-height:70vh;
+  border:1px solid rgba(255,255,255,.06);
+}
+.v-frame .fid{font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,.35)}
+.v-arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:52px;height:52px;display:grid;place-items:center;
+  color:var(--muted);border:1px solid transparent;
+  transition:opacity .45s ease,color .2s,border-color .2s;
+}
+.v-arrow:hover{color:var(--text);border-color:var(--line)}
+.v-arrow svg{width:22px;height:22px}
+.v-prev{left:22px}
+.v-next{right:22px}
+.v-bottom{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:40px;
+  padding:22px 26px 30px;border-top:1px solid var(--line-soft);
+}
+.v-series{font-size:10px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+.v-title{font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:.04em;margin-top:8px}
+.v-note{max-width:520px;text-align:right}
+.v-tag{
+  display:inline-block;margin-bottom:8px;padding:3px 10px;
+  border:1px solid rgba(201,168,106,.4);color:var(--accent);
+  font-size:9.5px;letter-spacing:.18em;
+}
+.v-note p{color:var(--muted);font-size:12px;line-height:1.95}
+.v-progress{position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(255,255,255,.08)}
+.v-progress i{display:block;height:100%;width:0;background:var(--accent)}
+.viewer.is-playing .v-progress i{animation:bar 4.5s linear forwards}
+@keyframes bar{from{width:0}to{width:100%}}
+
+/* 沉浸时自动隐藏界面 */
+.viewer-top,.v-bottom{transition:opacity .45s ease,transform .45s ease}
+.viewer.is-idle .viewer-top{opacity:0;transform:translateY(-10px);pointer-events:none}
+.viewer.is-idle .v-bottom{opacity:0;transform:translateY(10px);pointer-events:none}
+.viewer.is-idle .v-arrow{opacity:0;pointer-events:none}
+.v-hint{margin-top:10px;font-size:9.5px;letter-spacing:.14em;color:var(--dim)}
+
+/* ---------------- 响应式 ---------------- */
+@media (max-width:1080px){
+  .grid{columns:2}
+  .v-stage{padding:4px 70px}
+}
+@media (max-width:960px){
+  :root{--gutter:24px}
+  .nav-links{gap:20px;margin-right:18px}
+  .about-grid{grid-template-columns:1fr;gap:36px}
+  .footer-inner{grid-template-columns:1fr 1fr}
+  .hero-meta{display:none}
+  .hero-index{display:none}
+  .teach-grid{grid-template-columns:1fr;gap:34px}
+  .teach-aside{position:static}
+  .tabs{flex-direction:row;gap:24px;border-top:0;border-bottom:1px solid var(--line-soft);margin-top:24px}
+  .tab{width:auto;border-bottom:0;padding:10px 0;font-size:15px}
+  .tab .en{display:none}
+  .lesson{grid-template-columns:40px minmax(0,1fr);gap:16px}
+  .lesson .link{grid-column:2;justify-self:start}
+}
+@media (max-width:680px){
+  .nav-links{display:none}
+  .grid{columns:1}
+  .about-facts{grid-template-columns:1fr}
+  .section{padding:80px 0}
+  .v-stage{padding:4px 12px}
+  .v-arrow{width:40px;height:40px}
+  .v-prev{left:6px}.v-next{right:6px}
+  .v-bottom{flex-direction:column;align-items:flex-start;gap:14px}
+  .v-note{text-align:left}
+  .footer-inner{grid-template-columns:1fr}
+  .footer-bottom{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+}
+.noanim *{transition:none !important;animation:none !important}
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="progress"></div>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top"><span class="zh">留白</span><span class="en">WHITE SPACE</span></a>
+    <nav class="nav-links">
+      <a href="#works" class="active">作品</a>
+      <a href="#teach">教学</a>
+      <a href="#about">关于</a>
+    </nav>
+    <button class="btn btn--sm" id="navImmerse">沉浸模式</button>
+  </div>
+</header>
+
+<main>
+  <!-- 首屏 -->
+  <section class="hero grain" id="top">
+    <div class="hero-bg frame" style="--a:#4a5461;--b:#14171d"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">WHITE SPACE · 摄影作品 &amp; 入门课</p>
+      <h1 class="hero-title">把光留在<br><em>空白</em>处</h1>
+      <p class="hero-lead">一个关于山、雾、夜行与静物的拍摄计划。每一组照片配一条最基础的拍摄笔记——看完就能拿起相机试一次。</p>
+      <div class="hero-actions">
+        <button class="btn btn--solid" data-immerse="0">
+          进入沉浸模式
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+        </button>
+        <a class="btn" href="#teach">摄影教学</a>
+      </div>
+    </div>
+    <div class="hero-meta">2026 · 成都<br>自然 / 城市 / 静物</div>
+    <nav class="hero-index" aria-label="系列速览">
+      <button data-filter="山与雾"><i>01</i>山与雾</button>
+      <button data-filter="夜行城市"><i>02</i>夜行城市</button>
+      <button data-filter="潮间带"><i>03</i>潮间带</button>
+      <button data-filter="静物与手"><i>04</i>静物与手</button>
+    </nav>
+    <div class="scroll-hint">SCROLL</div>
+  </section>
+
+  <!-- 作品 -->
+  <section class="section" id="works">
+    <div class="section-inner">
+      <div class="section-head">
+        <h2>作品</h2>
+        <div class="side"><span class="idx">01</span><span>SELECTED WORKS</span></div>
+      </div>
+      <p class="section-lead">按系列筛选；点任意一张进入沉浸模式，用左右方向键翻页，Esc 退出。</p>
+
+      <div class="filters" id="filters"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <!-- 教学 -->
+  <section class="section teach" id="teach">
+    <div class="section-inner teach-grid">
+      <aside class="teach-aside">
+        <div class="side"><span class="idx">02</span><span>BASIC LESSONS</span></div>
+        <h2>三条最基础的<br>拍摄笔记</h2>
+        <p class="lead">不用背参数。先记住三件事：画面怎么切、光从哪来、什么时候该放慢手。每一条都能点开对应照片，边看边对照。</p>
+        <div class="tabs" id="tabs"></div>
+        <p class="teach-count">共 9 条 · 每条配 1 张示例</p>
+      </aside>
+      <div class="lessons" id="lessons"></div>
+    </div>
+  </section>
+
+  <!-- 关于 -->
+  <section class="about" id="about">
+    <div class="section-inner about-grid">
+      <div class="frame" style="--a:#4a3d34;--b:#171310;aspect-ratio:4/5"></div>
+      <div>
+        <p class="eyebrow">03 · ABOUT</p>
+        <h2>拍照是我和世界<br>保持距离的方式。</h2>
+        <p>我叫林深，住在成都，拍山、拍夜里的街道，也拍桌面上放了很久的东西。习惯用定焦镜头，一次只带一台相机。</p>
+        <p>这个站点收录了四个系列，也把每次拍摄时想明白的一点点道理写成了教学页——都是最基础、最容易上手的部分。</p>
+        <div class="about-facts">
+          <div><b>4</b><span>系列</span></div>
+          <div><b>18</b><span>作品</span></div>
+          <div><b>9</b><span>教学条目</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="zh">留白</div>
+      <p>课程作业演示站点：纯静态 HTML / CSS / JS，无后端、无第三方库。示例中的照片位置先用渐变占位。</p>
+    </div>
+    <div class="footer-col">
+      <h4>浏览</h4>
+      <a href="#works">作品</a>
+      <a href="#teach">教学</a>
+      <a href="#about">关于</a>
+    </div>
+    <div class="footer-col">
+      <h4>说明</h4>
+      <a href="#top">回到顶部</a>
+      <a href="#" onclick="return false">示例 v0.2</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 留白 WHITE SPACE</span>
+    <span>示例版 · 图片待替换</span>
+  </div>
+</footer>
+
+<!-- 沉浸模式 -->
+<div class="viewer" id="viewer" aria-hidden="true" role="dialog" aria-label="沉浸模式">
+  <div class="viewer-top">
+    <span id="vCount">01 / 06</span>
+    <div class="v-tools">
+      <button class="v-btn" id="vPlay">自动播放</button>
+      <button class="v-btn" id="vFull">全屏</button>
+      <button class="v-btn v-btn--close" id="vClose">关闭 ✕</button>
+    </div>
+  </div>
+
+  <button class="v-arrow v-prev" id="vPrev" aria-label="上一张">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 4l-8 8 8 8"/></svg>
+  </button>
+  <button class="v-arrow v-next" id="vNext" aria-label="下一张">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 4l8 8-8 8"/></svg>
+  </button>
+
+  <div class="v-stage">
+    <div class="v-frame frame" id="vFrame"><span class="fid" id="vFid">p01</span><span class="fglow"></span></div>
+  </div>
+
+  <div class="v-bottom">
+    <div class="v-info">
+      <p class="v-series" id="vSeries">山与雾 · 2025</p>
+      <h2 class="v-title" id="vTitle">雾起时</h2>
+      <p class="v-hint">← → 翻页 · 空格 播放 · Esc 退出</p>
+    </div>
+    <div class="v-note">
+      <span class="v-tag" id="vTag">构图 · 三分法</span>
+      <p id="vNoteText">把山脊压在画面上三分之一，雾填满下三分之二。</p>
+    </div>
+  </div>
+  <div class="v-progress"><i id="vBar"></i></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- 数据 ---------------- */
+  var PHOTOS = [
+    { id:"p01", title:"雾起时", series:"山与雾", year:"2025", ratio:"4/5", tone:["#4b5563","#171b20"],
+      tag:"构图 · 三分法", note:"把山脊压在画面上三分之一，雾填满下三分之二。空白不是没东西，是让视线有地方停。" },
+    { id:"p06", title:"末班地铁", series:"夜行城市", year:"2024", ratio:"4/5", tone:["#4d3d33","#17120f"],
+      tag:"光线 · 低照度", note:"不要开闪光灯。把 ISO 提到 3200，快门守在 1/60，让站台的灯自己发光。" },
+    { id:"p11", title:"退潮", series:"潮间带", year:"2025", ratio:"3/2", tone:["#48525c","#161b20"],
+      tag:"构图 · 负空间", note:"让大面积空白（沙滩、雾、水面）占七成，主体只做一个小点，照片会安静下来。" },
+    { id:"p09", title:"霓虹雨", series:"夜行城市", year:"2024", ratio:"3/2", tone:["#5b3b62","#1b1322"],
+      tag:"光线 · 混合色温", note:"霓虹偏冷、路灯偏暖，别去统一白平衡，让两种颜色在画面里打架。" },
+    { id:"p16", title:"侧光", series:"静物与手", year:"2026", ratio:"4/5", tone:["#5b4a3f","#1b1613"],
+      tag:"光线 · 侧逆光", note:"光从斜后方来，物体的边缘会亮起一道线。等光，比换镜头有用。" },
+    { id:"p13", title:"盐田", series:"潮间带", year:"2025", ratio:"3/2", tone:["#4f5761","#181d22"],
+      tag:"构图 · 引导线", note:"让田埂从画面左下角出发，指向远处的人。观众的视线会跟着线走。" }
+  ];
+
+  var LESSONS = [
+    { id:"compose", label:"构图", en:"FRAME", cards:[
+      { n:"01", title:"三分法", photo:"p01",
+        text:"把画面横竖各切两刀，主体放在四条线的交点上。拍山、拍人、拍静物都能先用这一招。" },
+      { n:"02", title:"引导线", photo:"p13",
+        text:"路、栏杆、田埂、光斑都能当线用。线从画面一角出发，指向你想让人看的地方。" },
+      { n:"03", title:"负空间", photo:"p11",
+        text:"留白不是浪费。主体越小、空白越大，照片越安静；先学会删，再学会加。" }
+    ]},
+    { id:"light", label:"光线", en:"LIGHT", cards:[
+      { n:"04", title:"低照度", photo:"p06",
+        text:"室内和夜里，先保证快门不糊：1/60 以上，ISO 不够就继续加，噪点比糊掉好。" },
+      { n:"05", title:"混合色温", photo:"p09",
+        text:"冷暖光同时出现时，别急着调白平衡。保留冲突，照片才有夜晚的味道。" },
+      { n:"06", title:"侧逆光", photo:"p16",
+        text:"让光从斜后方来，物体边缘会有一道亮线。轮廓光是免费的高级感。" }
+    ]},
+    { id:"params", label:"参数", en:"SETTINGS", cards:[
+      { n:"07", title:"光圈与景深", photo:"p16",
+        text:"想背景糊成一片用 f/1.8–f/2.8；想风景从近到远都清楚，收到 f/8–f/11。" },
+      { n:"08", title:"快门与动静", photo:"p06",
+        text:"拍走动的人 1/125 起步；想拍出雨丝的拖影，降到 1/15 并屏住呼吸。" },
+      { n:"09", title:"ISO 与噪点", photo:"p09",
+        text:"宁可高 ISO 拿到能用的照片，也不要为了干净而拍糊。噪点可以后期，糊片不行。" }
+    ]}
+  ];
+
+  var SERIES_ORDER = ["山与雾","夜行城市","潮间带","静物与手"];
+
+  /* ---------------- 工具 ---------------- */
+  function $(s, r) { return (r || document).querySelector(s); }
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+  function frameStyle(tone) { return "--a:" + tone[0] + ";--b:" + tone[1]; }
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  /* ---------------- 筛选 ---------------- */
+  var state = { filter: "全部" };
+
+  function renderFilters() {
+    var box = $("#filters");
+    var items = [{ id:"全部", n:PHOTOS.length }];
+    SERIES_ORDER.forEach(function (s) {
+      items.push({ id:s, n:PHOTOS.filter(function (p) { return p.series === s; }).length });
+    });
+    box.innerHTML = "";
+    items.forEach(function (it) {
+      var b = el("button", "chip" + (state.filter === it.id ? " is-on" : ""),
+        it.id + '<span class="n">' + pad(it.n) + "</span>");
+      b.addEventListener("click", function () {
+        state.filter = it.id;
+        renderFilters();
+        renderGrid();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function currentList() {
+    return state.filter === "全部"
+      ? PHOTOS.slice()
+      : PHOTOS.filter(function (p) { return p.series === state.filter; });
+  }
+
+  function renderGrid() {
+    var grid = $("#grid");
+    var list = currentList();
+    grid.innerHTML = "";
+    list.forEach(function (p) {
+      var fig = el("figure", "work");
+      fig.innerHTML =
+        '<div class="frame" style="' + frameStyle(p.tone) + ';aspect-ratio:' + p.ratio + '">' +
+          '<span class="fid">' + p.id.slice(1) + '</span><span class="fglow"></span><span class="view">查看 ↗</span>' +
+        "</div>" +
+        "<figcaption><b>" + p.title + "</b><span>" + p.series + " · " + p.year + "</span></figcaption>";
+      fig.addEventListener("click", function () { openViewer(PHOTOS.indexOf(p)); });
+      grid.appendChild(fig);
+    });
+  }
+
+  /* ---------------- 教学 ---------------- */
+  var lessonState = { tab: "compose" };
+
+  function renderTabs() {
+    var box = $("#tabs");
+    box.innerHTML = "";
+    LESSONS.forEach(function (t) {
+      var b = el("button", "tab" + (lessonState.tab === t.id ? " is-on" : ""),
+        t.label + '<span class="en">' + t.en + "</span>");
+      b.addEventListener("click", function () {
+        lessonState.tab = t.id;
+        renderTabs();
+        renderLessons();
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderLessons() {
+    var grid = $("#lessons");
+    var tab = LESSONS.filter(function (t) { return t.id === lessonState.tab; })[0];
+    grid.innerHTML = "";
+    tab.cards.forEach(function (c) {
+      var card = el("article", "lesson");
+      card.innerHTML =
+        '<span class="num">' + c.n + "</span>" +
+        '<div class="body"><h3>' + c.title + "</h3><p>" + c.text + "</p></div>" +
+        '<button class="link">对照照片 <span>→</span></button>';
+      card.querySelector(".link").addEventListener("click", function () {
+        openViewer(PHOTOS.findIndex(function (p) { return p.id === c.photo; }));
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  /* ---------------- 沉浸模式 ---------------- */
+  var viewer = $("#viewer");
+  var v = { index: 0, timer: null, playing: false, open: false };
+  var idleTimer = null;
+
+  /* 鼠标/触摸静止后隐藏界面，真正的沉浸 */
+  function wake() {
+    viewer.classList.remove("is-idle");
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () {
+      if (v.open) viewer.classList.add("is-idle");
+    }, 2600);
+  }
+
+  function renderViewer() {
+    var p = PHOTOS[v.index];
+    var f = $("#vFrame");
+    f.style.setProperty("--a", p.tone[0]);
+    f.style.setProperty("--b", p.tone[1]);
+    $("#vFid").textContent = p.id.toUpperCase() + " · " + p.ratio.replace("/", ":");
+    $("#vTitle").textContent = p.title;
+    $("#vSeries").textContent = p.series + " · " + p.year;
+    $("#vTag").textContent = p.tag;
+    $("#vNoteText").textContent = p.note;
+    $("#vCount").textContent = pad(v.index + 1) + " / " + pad(PHOTOS.length);
+  }
+
+  function openViewer(i) {
+    if (i < 0) i = 0;
+    v.index = i;
+    v.open = true;
+    viewer.classList.add("is-open");
+    viewer.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    renderViewer();
+    wake();
+  }
+
+  function closeViewer() {
+    v.open = false;
+    clearTimeout(idleTimer);
+    viewer.classList.remove("is-idle");
+    viewer.classList.remove("is-open");
+    viewer.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    stopPlay();
+  }
+
+  function step(d) {
+    v.index = (v.index + d + PHOTOS.length) % PHOTOS.length;
+    renderViewer();
+    wake();
+    if (v.playing) restartBar();
+  }
+
+  function startPlay() {
+    v.playing = true;
+    $("#vPlay").classList.add("is-on");
+    $("#vPlay").textContent = "暂停";
+    viewer.classList.add("is-playing");
+    restartBar();
+    v.timer = setInterval(function () { step(1); }, 4500);
+  }
+
+  function stopPlay() {
+    v.playing = false;
+    clearInterval(v.timer);
+    v.timer = null;
+    viewer.classList.remove("is-playing");
+    $("#vPlay").classList.remove("is-on");
+    $("#vPlay").textContent = "自动播放";
+    $("#vBar").style.width = "0";
+  }
+
+  function restartBar() {
+    var bar = $("#vBar");
+    bar.style.animation = "none";
+    void bar.offsetWidth;
+    bar.style.animation = "";
+  }
+
+  function togglePlay() { v.playing ? stopPlay() : startPlay(); }
+
+  function toggleFull() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+
+  $("#vPrev").addEventListener("click", function () { step(-1); });
+  $("#vNext").addEventListener("click", function () { step(1); });
+  $("#vClose").addEventListener("click", closeViewer);
+  $("#vPlay").addEventListener("click", togglePlay);
+  $("#vFull").addEventListener("click", toggleFull);
+  $("#navImmerse").addEventListener("click", function () { openViewer(0); });
+
+  viewer.addEventListener("mousemove", wake);
+  var swipeX = null;
+  viewer.addEventListener("touchstart", function (e) { swipeX = e.touches[0].clientX; wake(); }, { passive: true });
+  viewer.addEventListener("touchend", function (e) {
+    if (swipeX == null) return;
+    var dx = e.changedTouches[0].clientX - swipeX;
+    if (Math.abs(dx) > 60) step(dx < 0 ? 1 : -1);
+    swipeX = null;
+  }, { passive: true });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-immerse]"), function (b) {
+    b.addEventListener("click", function () { openViewer(Number(b.dataset.immerse) || 0); });
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (!v.open) return;
+    if (e.key === "Escape") closeViewer();
+    else if (e.key === "ArrowLeft") step(-1);
+    else if (e.key === "ArrowRight") step(1);
+    else if (e.key === " ") { e.preventDefault(); togglePlay(); }
+  });
+
+  /* ---------------- 其他 ---------------- */
+  var nav = $("#nav");
+  var progress = $("#progress");
+  function onScroll() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0) + "%";
+    nav.classList.toggle("is-solid", window.scrollY > 40);
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  var links = Array.prototype.slice.call(document.querySelectorAll(".nav-links a"));
+  var sections = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var i = sections.indexOf(en.target);
+        if (i < 0) return;
+        links.forEach(function (a, j) { a.classList.toggle("active", i === j); });
+      });
+    }, { rootMargin: "-40% 0px -50% 0px" });
+    sections.forEach(function (s) { if (s) io.observe(s); });
+  }
+
+  renderFilters();
+  renderGrid();
+  renderTabs();
+  renderLessons();
+
+  Array.prototype.forEach.call(document.querySelectorAll(".hero-index button"), function (b) {
+    b.addEventListener("click", function () {
+      state.filter = b.dataset.filter;
+      renderFilters();
+      renderGrid();
+      var works = document.getElementById("works");
+      if (works) works.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  /* 深链接：#作品 / #教学；?v=3 直接打开某张的沉浸模式；#flat 便于整页截图 */
+  if (/^#flat/.test(location.hash)) document.documentElement.classList.add("flat");
+  if (location.hash) {
+    var target = document.querySelector(location.hash);
+    if (target) setTimeout(function () { target.scrollIntoView({ behavior: "instant", block: "start" }); }, 60);
+  }
+  var vh = (location.search.match(/[?&]v=(\d+)/) || [])[1] || (location.hash.match(/^#view(\d+)/) || [])[1];
+  if (vh) { document.documentElement.classList.add("noanim"); setTimeout(function () { openViewer(Number(vh)); }, 120); }
+})();
+</script>
+</body>
+</html>
