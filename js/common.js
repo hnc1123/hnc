@@ -1,25 +1,18 @@
 /* ==========================================================================
-   声屿 SoundIsle · 公共工具
-   选择器 / 提示条 / 格式化 / 收藏与最近播放 / 列表行组件
+   留白 WHITE SPACE · 公共工具
+   路径 / 图片占位 / 灯箱 / 轻提示 / 滚动淡入
    ========================================================================== */
 
 window.App = (function () {
   "use strict";
 
-  const $ = (sel, root) => (root || document).querySelector(sel);
-  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
-
-  /* 站点根路径：页面在 pages/ 下时 body[data-base] 为 "../" */
   const base = (document.body && document.body.dataset.base) || "";
   const url = (path) => base + path;
 
-  /* 秒 -> mm:ss */
-  function fmtTime(total) {
-    const s = Math.max(0, Math.floor(total || 0));
-    const m = Math.floor(s / 60);
-    const r = s % 60;
-    return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
-  }
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.prototype.slice.call((root || document).querySelectorAll(sel));
+
+  const reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   function esc(str) {
     return String(str == null ? "" : str).replace(/[&<>"']/g, (c) => ({
@@ -27,155 +20,197 @@ window.App = (function () {
     }[c]));
   }
 
-  /* 底部提示条 */
-  let toastTimer = null;
-  function toast(message) {
-    let el = $("#toast");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "toast";
-      el.className = "toast";
-      el.setAttribute("role", "status");
-      el.setAttribute("aria-live", "polite");
-      document.body.appendChild(el);
-    }
-    el.textContent = message;
-    el.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  /* 图片加载失败（还没放照片）时隐藏 img，露出下面的同色系渐变 */
+  document.addEventListener("error", (e) => {
+    const img = e.target;
+    if (img && img.tagName === "IMG") img.classList.add("is-missing");
+  }, true);
+
+  /* 脚本执行前就已经加载失败的图片，补一次检查 */
+  function markMissing() {
+    Array.prototype.forEach.call(document.querySelectorAll("img"), (img) => {
+      if (img.complete && img.naturalWidth === 0) img.classList.add("is-missing");
+    });
+  }
+  if (document.readyState === "complete") markMissing();
+  else window.addEventListener("load", markMissing);
+
+  function frameStyle(photo) {
+    const tone = photo.tone || ["#3a3e46", "#1a1c21"];
+    return "style=\"--a:" + tone[0] + ";--b:" + tone[1] + "\"";
   }
 
-  /* localStorage 封装：隐私模式或禁用时静默降级 */
-  const PREFIX = "sy_";
-  const store = {
-    get(key, fallback) {
-      try {
-        const raw = localStorage.getItem(PREFIX + key);
-        return raw == null ? fallback : JSON.parse(raw);
-      } catch (err) { return fallback; }
-    },
-    set(key, value) {
-      try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); return true; }
-      catch (err) { return false; }
-    },
-    remove(key) {
-      try { localStorage.removeItem(PREFIX + key); } catch (err) { /* ignore */ }
-    }
-  };
-
-  /* ----------------------------- 收藏 ----------------------------- */
-  const FAV_KEY = "favorites";
-  function readFav() {
-    const raw = store.get(FAV_KEY, null);
-    return {
-      songs: Array.isArray(raw && raw.songs) ? raw.songs : [],
-      playlists: Array.isArray(raw && raw.playlists) ? raw.playlists : []
-    };
+  function srcOf(photo) {
+    return photo.url || url("assets/photos/" + photo.file);
   }
-  function writeFav(fav) { store.set(FAV_KEY, fav); }
 
-  const fav = {
-    all: readFav,
-    songs() { return readFav().songs; },
-    playlists() { return readFav().playlists; },
-    hasSong(id) { return readFav().songs.indexOf(id) !== -1; },
-    hasPlaylist(id) { return readFav().playlists.indexOf(id) !== -1; },
-    toggleSong(id) {
-      const f = readFav();
-      const i = f.songs.indexOf(id);
-      if (i === -1) f.songs.unshift(id); else f.songs.splice(i, 1);
-      writeFav(f);
-      return i === -1;
-    },
-    togglePlaylist(id) {
-      const f = readFav();
-      const i = f.playlists.indexOf(id);
-      if (i === -1) f.playlists.unshift(id); else f.playlists.splice(i, 1);
-      writeFav(f);
-      return i === -1;
-    },
-    removeSong(id) {
-      const f = readFav();
-      f.songs = f.songs.filter((x) => x !== id);
-      writeFav(f);
-    },
-    removePlaylist(id) {
-      const f = readFav();
-      f.playlists = f.playlists.filter((x) => x !== id);
-      writeFav(f);
-    },
-    clear() { store.remove(FAV_KEY); }
-  };
-
-  /* ----------------------------- 最近播放 ----------------------------- */
-  const RECENT_KEY = "recent";
-  const recent = {
-    list() {
-      const raw = store.get(RECENT_KEY, []);
-      return Array.isArray(raw) ? raw : [];
-    },
-    add(id) {
-      if (!id) return;
-      const list = recent.list().filter((x) => x !== id);
-      list.unshift(id);
-      store.set(RECENT_KEY, list.slice(0, 30));
-    },
-    clear() { store.remove(RECENT_KEY); }
-  };
-
-  /* ----------------------------- 图标 ----------------------------- */
-  const ICON = {
-    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
-    pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg>',
-    heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19.5s-7-4.3-7-9.1A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.4c0 4.8-7 9.1-7 9.1z"/></svg>',
-    heartFill: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 19.5s-7-4.3-7-9.1A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.4c0 4.8-7 9.1-7 9.1z"/></svg>',
-    bolt: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L5 13h5l-1 9 8-11h-5z"/></svg>',
-    star: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3L21 9l-4.8 4.4L17.5 20 12 16.7 6.5 20l1.3-6.6L3 9l6.4-.7z"/></svg>',
-    note: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 18.5A2.5 2.5 0 1 1 7.5 16c.5 0 1 .15 1.5.45V6l9-2v3.2l-7 1.55v9.75z"/></svg>',
-    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
-    folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.5A2 2 0 0 1 5.5 5.5h3l1.6 2h8.4a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></svg>'
-  };
-
-  /* ----------------------------- 列表组件 ----------------------------- */
-  function songRow(song, index, options) {
-    const opts = options || {};
-    const liked = opts.liked != null ? opts.liked : fav.hasSong(song.id);
-    const trend = opts.trend;
-    const third = trend
-      ? '<span class="t-album"><span class="trend ' + esc(trend.type || "") + '">' + esc(trend.text) + "</span></span>"
-      : '<span class="t-album">' + esc(song.album) + "</span>";
+  function photoFrame(photo, extraClass) {
     return (
-      '<div class="track" data-song="' + esc(song.id) + '" data-index="' + index + '">' +
-        '<span class="t-idx num">' + String(index + 1).padStart(2, "0") + "</span>" +
-        '<div class="t-main"><b>' + esc(song.title) + "</b><span>" + esc(song.artist) + "</span></div>" +
-        third +
-        '<span class="t-dur num">' + fmtTime(song.duration) + "</span>" +
-        '<button class="t-like' + (liked ? " on" : "") + '" data-like aria-label="收藏 ' + esc(song.title) + '" aria-pressed="' + (liked ? "true" : "false") + '">' +
-          (liked ? ICON.heartFill : ICON.heart) +
-        "</button>" +
+      '<div class="frame ' + (extraClass || "") + '" ' + frameStyle(photo) + ">" +
+        '<img src="' + esc(srcOf(photo)) + '" alt="' + esc(photo.title) + '" loading="lazy" decoding="async">' +
+        (photo.local ? '<span class="badge-local">本地</span>' : "") +
       "</div>"
     );
   }
 
-  function playlistCard(p) {
-    return (
-      '<article class="card" data-playlist="' + esc(p.id) + '">' +
-        '<div class="cover ' + esc(p.cover) + '">' +
-          '<span class="plays num">' + ICON.play + esc(p.plays) + "</span>" +
-          '<button class="play" data-play aria-label="播放歌单 ' + esc(p.title) + '">' + ICON.play + "</button>" +
-        "</div>" +
-        '<p class="card-title">' + esc(p.title) + "</p>" +
-        '<p class="card-meta">' + esc(p.author) + ' <span class="tag">' + esc(p.tag) + "</span></p>" +
-      "</article>"
-    );
+  /* ----------------------------- 轻提示 ----------------------------- */
+  let toastTimer = null;
+  function toast(message) {
+    let node = $("#appToast");
+    if (!node) {
+      node = document.createElement("div");
+      node.id = "appToast";
+      node.className = "toast";
+      node.setAttribute("role", "status");
+      document.body.appendChild(node);
+    }
+    node.textContent = message;
+    node.classList.add("is-show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => node.classList.remove("is-show"), 2600);
   }
 
-  function todo(page) {
-    toast("「" + page + "」将在后续提交中开放");
+  /* ----------------------------- 灯箱 ----------------------------- */
+  const Lightbox = (function () {
+    let el = null;
+    let img = null;
+    let figure = null;
+    let capTitle = null;
+    let capMeta = null;
+    let count = null;
+    let frame = null;
+    let list = [];
+    let index = 0;
+    let token = 0;
+
+    function build() {
+      if (el) return;
+      el = document.createElement("div");
+      el.className = "lightbox";
+      el.id = "lightbox";
+      el.setAttribute("aria-hidden", "true");
+      el.innerHTML =
+        '<span class="lb-count"></span>' +
+        '<button class="lb-close" aria-label="关闭">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
+        "</button>" +
+        '<button class="lb-nav lb-prev" aria-label="上一张">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M15 4l-8 8 8 8"/></svg>' +
+        "</button>" +
+        '<button class="lb-nav lb-next" aria-label="下一张">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 4l8 8-8 8"/></svg>' +
+        "</button>" +
+        '<div class="lb-figure">' +
+          '<div class="lb-frame"><img alt=""></div>' +
+          '<div class="lb-caption"><b></b><span></span></div>' +
+        "</div>";
+
+      document.body.appendChild(el);
+      img = $(".lb-frame img", el);
+      frame = $(".lb-frame", el);
+      figure = $(".lb-figure", el);
+      capTitle = $(".lb-caption b", el);
+      capMeta = $(".lb-caption span", el);
+      count = $(".lb-count", el);
+
+      $(".lb-close", el).addEventListener("click", close);
+      $(".lb-prev", el).addEventListener("click", () => step(-1));
+      $(".lb-next", el).addEventListener("click", () => step(1));
+      el.addEventListener("click", (e) => { if (e.target === el) close(); });
+
+      let startX = null;
+      el.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
+      el.addEventListener("touchend", (e) => {
+        if (startX == null) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 55) step(dx < 0 ? 1 : -1);
+        startX = null;
+      }, { passive: true });
+
+      document.addEventListener("keydown", (e) => {
+        if (!el.classList.contains("is-open")) return;
+        if (e.key === "Escape") close();
+        if (e.key === "ArrowLeft") step(-1);
+        if (e.key === "ArrowRight") step(1);
+      });
+    }
+
+    function show(i) {
+      index = (i + list.length) % list.length;
+      const p = list[index];
+      const tone = p.tone || ["#3a3e46", "#1a1c21"];
+      frame.style.setProperty("--a", tone[0]);
+      frame.style.setProperty("--b", tone[1]);
+
+      const series = window.DATA && window.DATA.seriesById ? window.DATA.seriesById[p.series] : null;
+      capTitle.textContent = p.title;
+      capMeta.textContent = (series ? series.title : "我的照片") + " · " + p.year;
+      count.textContent = String(index + 1).padStart(2, "0") + " / " + String(list.length).padStart(2, "0");
+
+      const my = ++token;
+      img.classList.add("is-fading");
+      img.classList.remove("is-missing");
+
+      const pre = new Image();
+      pre.onload = () => {
+        if (my !== token) return;
+        img.src = pre.src;
+        requestAnimationFrame(() => img.classList.remove("is-fading"));
+      };
+      pre.onerror = () => {
+        if (my !== token) return;
+        img.removeAttribute("src");
+        img.classList.add("is-missing");
+        img.classList.remove("is-fading");
+      };
+      pre.src = srcOf(p);
+    }
+
+    function open(items, i) {
+      build();
+      list = items || [];
+      if (!list.length) return;
+      show(i || 0);
+      el.classList.add("is-open");
+      el.setAttribute("aria-hidden", "false");
+      document.body.classList.add("is-locked");
+    }
+
+    function close() {
+      if (!el) return;
+      el.classList.remove("is-open");
+      el.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("is-locked");
+    }
+
+    function step(delta) {
+      if (!el || !el.classList.contains("is-open")) return;
+      show(index + delta);
+    }
+
+    return { open, close, step };
+  })();
+
+  /* ----------------------------- 滚动淡入 ----------------------------- */
+  let observer = null;
+  function revealInit() {
+    const items = $$(".reveal:not(.in)");
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      items.forEach((n) => n.classList.add("in"));
+      return;
+    }
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -6% 0px", threshold: 0.05 });
+    }
+    items.forEach((n) => observer.observe(n));
   }
 
-  return {
-    $, $$, base, url, fmtTime, esc, toast, store,
-    fav, recent, ICON, songRow, playlistCard, todo
-  };
+  return { base, url, $, $$, esc, photoFrame, frameStyle, srcOf, Lightbox, revealInit, toast, reduceMotion };
 })();
