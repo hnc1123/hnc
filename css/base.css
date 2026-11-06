@@ -1,134 +1,79 @@
 /* ==========================================================================
-   声屿 SoundIsle · 基础层
-   设计变量 / 重置 / 排版 / 主题
+   留白 WHITE SPACE · 基础层
+   设计变量 / 重置 / 排版
    ========================================================================== */
 
 :root {
-  /* 色板 · 深色（默认） */
-  --bg: #080a10;
-  --bg-soft: #0b0e16;
-  --panel: #0d1019;
-  --panel-2: #121627;
-  --line: rgba(255, 255, 255, .07);
-  --line-2: rgba(255, 255, 255, .12);
-  --text: #eef2f8;
-  --text-2: #a4adc2;
-  --text-3: #6b7488;
-  --mint: #3ce3c4;
-  --violet: #8b7bff;
-  --pink: #ff7fb0;
-  --grad: linear-gradient(120deg, #3ce3c4, #8b7bff 58%, #ff7fb0);
-  --glow-a: rgba(60, 227, 196, .10);
-  --glow-b: rgba(139, 123, 255, .13);
-  --glow-c: rgba(255, 127, 176, .07);
+  /* 深色沉浸式色板：近黑底 + 暖白字 + 黄铜点缀 */
+  --bg: #0a0a0a;
+  --bg-2: #0d0d0e;
+  --surface: #131314;
+  --line: rgba(255, 255, 255, .13);
+  --line-soft: rgba(255, 255, 255, .07);
+  --text: #ece9e3;
+  --muted: #918d85;
+  --dim: #5f5c56;
+  --accent: #c9a86a;
 
-  /* 形状与节奏 */
-  --r-xl: 24px;
-  --r-lg: 22px;
-  --r-md: 16px;
-  --r-sm: 10px;
-  --sidebar: 236px;
-  --player: 88px;
-  --gap: 18px;
+  --serif: "Songti SC", "STSong", "SimSun", Georgia, "Times New Roman", serif;
+  --sans: "PingFang SC", "Microsoft YaHei UI", "Segoe UI", system-ui, -apple-system, sans-serif;
 
-  /* 字体 */
-  --font: "Segoe UI Variable Display", "Segoe UI", "Microsoft YaHei UI",
-          "PingFang SC", system-ui, -apple-system, sans-serif;
-
-  --shadow-card: 0 18px 34px rgba(0, 0, 0, .45);
-  --shadow-pop: 0 14px 34px rgba(0, 0, 0, .45);
-}
-
-/* 浅色主题：第 6 天启用，先定义好变量 */
-[data-theme="light"] {
-  --bg: #f5f7fc;
-  --bg-soft: #eef1f8;
-  --panel: #ffffff;
-  --panel-2: #eef1f8;
-  --line: rgba(15, 23, 42, .08);
-  --line-2: rgba(15, 23, 42, .14);
-  --text: #0f172a;
-  --text-2: #46536b;
-  --text-3: #7b879b;
-  --mint: #0bb9a3;
-  --violet: #6a5af5;
-  --pink: #e8558c;
-  --grad: linear-gradient(120deg, #0bb9a3, #6a5af5 58%, #e8558c);
-  --glow-a: rgba(11, 185, 163, .10);
-  --glow-b: rgba(106, 90, 245, .10);
-  --glow-c: rgba(232, 85, 140, .06);
-  --shadow-card: 0 16px 30px rgba(15, 23, 42, .10);
-  --shadow-pop: 0 14px 30px rgba(15, 23, 42, .14);
+  --max: 1280px;
+  --gutter: 40px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
 }
 
 * { box-sizing: border-box; }
 
-html, body { height: 100%; }
+html, body { margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  margin: 0;
-  font-family: var(--font);
   background: var(--bg);
   color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow: hidden;
-  transition: background-color .3s ease, color .3s ease;
+  overflow-x: hidden;
 }
 
-/* 背景光晕 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(720px 420px at 12% -8%, var(--glow-a), transparent 62%),
-    radial-gradient(820px 520px at 88% 4%, var(--glow-b), transparent 64%),
-    radial-gradient(600px 400px at 60% 108%, var(--glow-c), transparent 60%);
-}
+body.is-locked { overflow: hidden; }
 
 h1, h2, h3, h4, p { margin: 0; }
-
 a { color: inherit; text-decoration: none; }
-
-button {
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-
-input { font: inherit; }
-
 img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 
-::selection { background: rgba(60, 227, 196, .28); }
+::selection { background: var(--accent); color: #0a0a0a; }
 
-:focus-visible {
-  outline: 2px solid var(--mint);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
 
 /* 滚动条 */
-.scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transparent; }
-.scroll::-webkit-scrollbar { width: 8px; }
-.scroll::-webkit-scrollbar-track { background: transparent; }
-.scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .14);
-  border-radius: 8px;
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #26262a; border: 3px solid #0a0a0a; border-radius: 8px; }
+
+/* ----------------------------- 排版工具 ----------------------------- */
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-[data-theme="light"] .scroll { scrollbar-color: rgba(15, 23, 42, .18) transparent; }
-[data-theme="light"] .scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, .16); }
 
-/* 数字等宽，时间与播放量对齐 */
-.num { font-variant-numeric: tabular-nums; }
+.serif { font-family: var(--serif); font-weight: 400; }
 
-/* 无障碍：仅屏幕阅读器可见 */
+.muted { color: var(--muted); }
+.dim { color: var(--dim); }
+
+.rule {
+  height: 1px;
+  background: var(--line-soft);
+}
+
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -139,10 +84,19 @@ img { display: block; max-width: 100%; }
   border: 0;
 }
 
+/* 滚动进入的淡入 */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .8s var(--ease), transform .9s var(--ease);
+  will-change: opacity, transform;
+}
+.reveal.in { opacity: 1; transform: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .001ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
   }
+  .reveal { opacity: 1; transform: none; }
 }
