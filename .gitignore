@@ -1,5 +1,5 @@
 .tools/
-.tmp-edge/
+.tmp-edge*/
 .shots/
 .dsh-inspect/
 node_modules/
@@ -8,3 +8,6 @@ node_modules/
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# 本地资料，不进入站点仓库
+实习投递/
