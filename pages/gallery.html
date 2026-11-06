@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="留白 WHITE SPACE 作品集：山与雾、夜行城市、潮间带、静物与手。">
+  <title>作品集 · 留白 WHITE SPACE</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="gallery" data-base="../">
+  <header id="navMount"></header>
+
+  <main class="main">
+    <section class="page-head">
+      <p class="eyebrow">GALLERY · 2024—2026</p>
+      <h1>作品集</h1>
+      <p class="lead">
+        四个系列，共 <span id="totalCount">18</span> 张。点任意一张进入全屏，左右方向键翻页，Esc 退出。
+        也可以把自己电脑里的照片加进来看效果。
+      </p>
+    </section>
+
+    <div class="gallery-toolbar">
+      <div class="filters" id="filters"></div>
+      <button class="add-photo" id="addPhoto" type="button" title="从电脑里选几张照片">＋ 添加照片</button>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    </div>
+
+    <div class="masonry" id="grid"></div>
+
+    <p class="gallery-note">
+      照片放在 <code>assets/photos/</code> 下，按 p01.jpg ~ p18.jpg 命名会自动显示；
+      通过“添加照片”加进来的图只保存在你自己的浏览器里（IndexedDB），不会上传到任何服务器。
+    </p>
+  </main>
+
+  <footer id="footerMount"></footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/library.js"></script>
+  <script src="../js/shell.js"></script>
+  <script src="../js/gallery.js"></script>
+</body>
+</html>
