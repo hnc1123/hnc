@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 # 留白 WHITE SPACE · 每日自动提交
 # 有改动就 commit + push；没有改动就跳过，不造空提交
 # 用法：powershell -NoProfile -ExecutionPolicy Bypass -File tools\daily-commit.ps1
