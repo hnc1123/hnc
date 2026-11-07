@@ -97,6 +97,10 @@
       const frame = fig.querySelector(".frame");
       if (frame) frame.style.aspectRatio = p.ratio;
 
+      /* 首屏这几张先加载，避免一进来一片空 */
+      const img = fig.querySelector(".frame img");
+      if (img && i < 6) { img.loading = "eager"; img.decoding = "sync"; }
+
       fig.addEventListener("click", (e) => {
         if (e.target.closest(".work-remove")) return;
         Lightbox.open(list, i);

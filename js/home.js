@@ -43,6 +43,11 @@
       );
     }).join("");
 
+    Array.prototype.slice.call(grid.querySelectorAll(".work img"), 0, 3).forEach((img) => {
+      img.loading = "eager";
+      img.decoding = "sync";
+    });
+
     grid.addEventListener("click", (e) => {
       const item = e.target.closest("[data-index]");
       if (!item) return;

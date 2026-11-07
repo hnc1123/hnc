@@ -33,6 +33,8 @@
       '<figcaption><b>' + esc(p.title) + "</b><span>" + esc(p.year) + "</span></figcaption>";
     const frame = fig.querySelector(".frame");
     if (frame) frame.style.aspectRatio = p.ratio;
+    const img = fig.querySelector(".frame img");
+    if (img && i < 2) { img.loading = "eager"; img.decoding = "sync"; }
     fig.addEventListener("click", () => Lightbox.open(photos, i));
     grid.appendChild(fig);
   });
