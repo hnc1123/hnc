@@ -26,9 +26,12 @@ window.App = (function () {
     if (img && img.tagName === "IMG") img.classList.add("is-missing");
   }, true);
 
-  /* 脚本执行前就已经加载失败的图片，补一次检查 */
+  /* 脚本执行前就已经加载失败的图片，补一次检查
+     注意：loading="lazy" 的图还没开始下载时 complete 也为真、naturalWidth 为 0，
+     不能当成失败，否则会被永久隐藏。 */
   function markMissing() {
     Array.prototype.forEach.call(document.querySelectorAll("img"), (img) => {
+      if (img.getAttribute("loading") === "lazy") return;
       if (img.complete && img.naturalWidth === 0) img.classList.add("is-missing");
     });
   }
