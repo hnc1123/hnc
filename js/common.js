@@ -77,6 +77,7 @@ window.App = (function () {
     let figure = null;
     let capTitle = null;
     let capMeta = null;
+    let shotLine = null;
     let count = null;
     let frame = null;
     let list = [];
@@ -103,6 +104,7 @@ window.App = (function () {
         '<div class="lb-figure">' +
           '<div class="lb-frame"><img alt=""></div>' +
           '<div class="lb-caption"><b></b><span></span></div>' +
+          '<div class="lb-shot"></div>' +
         "</div>";
 
       document.body.appendChild(el);
@@ -111,6 +113,7 @@ window.App = (function () {
       figure = $(".lb-figure", el);
       capTitle = $(".lb-caption b", el);
       capMeta = $(".lb-caption span", el);
+      shotLine = $(".lb-shot", el);
       count = $(".lb-count", el);
 
       $(".lb-close", el).addEventListener("click", close);
@@ -145,6 +148,7 @@ window.App = (function () {
       const series = window.DATA && window.DATA.seriesById ? window.DATA.seriesById[p.series] : null;
       capTitle.textContent = p.title;
       capMeta.textContent = (series ? series.title : "我的照片") + " · " + p.year;
+      shotLine.textContent = (window.DATA && window.DATA.shotOf) ? window.DATA.shotOf(p.id) : "";
       count.textContent = String(index + 1).padStart(2, "0") + " / " + String(list.length).padStart(2, "0");
 
       const my = ++token;

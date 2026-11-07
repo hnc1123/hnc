@@ -206,6 +206,13 @@
   letter-spacing: .26em;
   color: var(--muted);
 }
+.lb-shot {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: .16em;
+  color: var(--dim);
+}
 .lb-close {
   position: absolute;
   top: 20px;

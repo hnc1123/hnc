@@ -85,6 +85,32 @@ window.DATA = (function () {
   const photoById = {};
   photos.forEach((p) => { photoById[p.id] = p; });
 
+  /* 每张作品的拍摄参数，显示在灯箱标题下面那行 */
+  const shots = {
+    p01: "35mm · f/8 · 1/125s · ISO 200",
+    p02: "35mm · f/11 · 1/250s · ISO 100",
+    p03: "85mm · f/4 · 1/200s · ISO 400",
+    p04: "35mm · f/8 · 1/500s · ISO 100",
+    p05: "35mm · f/11 · 1/160s · ISO 100",
+    p06: "35mm · f/2 · 1/60s · ISO 3200",
+    p07: "35mm · f/1.8 · 1/80s · ISO 1600",
+    p08: "35mm · f/2.8 · 1/60s · ISO 2000",
+    p09: "50mm · f/2 · 1/60s · ISO 3200",
+    p10: "35mm · f/2 · 1/125s · ISO 1600",
+    p11: "35mm · f/9 · 1/250s · ISO 100",
+    p12: "35mm · f/8 · 1/160s · ISO 100",
+    p13: "35mm · f/11 · 1/320s · ISO 100",
+    p14: "50mm · f/5.6 · 1/200s · ISO 200",
+    p15: "85mm · f/2.8 · 1/250s · ISO 200",
+    p16: "85mm · f/2 · 1/125s · ISO 400",
+    p17: "50mm · f/2.8 · 1/80s · ISO 800",
+    p18: "85mm · f/2.8 · 1/100s · ISO 400"
+  };
+
+  function shotOf(id) {
+    return shots[id] || "";
+  }
+
   function photosOf(seriesId) {
     return photos.filter((p) => p.series === seriesId);
   }
@@ -105,6 +131,7 @@ window.DATA = (function () {
     categories,
     seriesById,
     photoById,
+    shotOf,
     photosOf,
     coverOf
   };
