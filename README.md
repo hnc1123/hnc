@@ -7,6 +7,8 @@
 - 直接双击 `index.html`，或用 VSCode 的 **Live Server** 右键打开。
 - 全部资源都是相对路径，放到 GitHub Pages / Gitee Pages 也能直接用。
 
+进度记录见 [docs/工作日志.md](docs/工作日志.md)。
+
 ## 页面
 
 | 文件 | 内容 |
