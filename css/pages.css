@@ -392,7 +392,11 @@ a:hover > .frame img,
 @media (max-width: 640px) {
   .works-grid { grid-template-columns: 1fr; }
   .masonry { columns: 1; }
-  .hero { padding-bottom: 72px; }
+  .hero { padding-bottom: 88px; }
+  .hero-title { font-size: clamp(40px, 12vw, 64px); }
+  .hero-lead { font-size: 13px; line-height: 2; }
+  .hero-actions { gap: 10px; }
+  .scroll-hint { display: none; }
   .hero-meta { display: none; }
   .about-facts { grid-template-columns: 1fr 1fr; }
   .series-info { gap: 18px; flex-wrap: wrap; }
