@@ -572,6 +572,24 @@ a:hover > .frame img,
 }
 .lesson h3 { font-family: var(--serif); font-weight: 400; font-size: 23px; letter-spacing: .03em; margin-bottom: 8px; }
 .lesson p { color: var(--muted); font-size: 12.5px; line-height: 2; max-width: 600px; }
+.lesson-extra { margin-top: 14px; display: grid; gap: 6px; }
+.lesson-extra p {
+  display: flex;
+  gap: 14px;
+  max-width: 640px;
+  font-size: 11.5px;
+  line-height: 1.95;
+  color: var(--dim);
+}
+.lesson-extra b {
+  flex: none;
+  width: 60px;
+  padding-top: 1px;
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  color: var(--accent);
+}
 .lesson .link {
   display: inline-flex;
   align-items: center;
