@@ -2,6 +2,8 @@
 
 一个纯静态的摄影作品集 + 入门教学站点，课程作业用。没有后端、没有第三方库、没有构建步骤，双击 `index.html` 就能看。
 
+线上地址：**https://hnc1123.github.io/hnc/**
+
 ## 本地打开
 
 - 直接双击 `index.html`，或用 VSCode 的 **Live Server** 右键打开。
