@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08080a">
+<title>Echo Garden · 回声花园</title>
+<style>
+/* ============================================================
+   Echo Garden · 回声花园
+   一个把声音当作园丁的静谧小游戏。
+   深色、克制、像夜里被月光照亮的花园。
+   ============================================================ */
+:root{
+  --bg:#08080a;
+  --panel:#111214;
+  --line:#242428;
+  --ink:#eeece5;
+  --muted:#8b8b91;
+  --dim:#58585e;
+  --gold:#f3c969;
+  --gold-soft:rgba(243,201,105,.16);
+  --cyan:#6ee7d8;
+  --green:#3ddc97;
+  --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",Georgia,"Times New Roman",serif;
+  --mono:"SFMono-Regular","Cascadia Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+html{background:var(--bg)}
+body{
+  min-height:100svh;
+  min-height:100dvh;
+  background:
+    radial-gradient(ellipse at 50% -18%,rgba(61,220,151,.06),transparent 40%),
+    radial-gradient(ellipse at 85% 112%,rgba(110,231,216,.035),transparent 36%),
+    radial-gradient(ellipse at 8% 100%,rgba(243,201,105,.04),transparent 30%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+  overscroll-behavior:none;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+a{color:inherit}
+::selection{background:var(--gold);color:#0a0a0b}
+
+.app{
+  min-height:100svh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.topbar{
+  width:min(880px,calc(100% - 28px));
+  height:62px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex:0 0 auto;
+}
+.topbar-left,.topbar-actions{display:flex;align-items:center;gap:10px}
+.home-link{
+  width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;
+  color:var(--muted);text-decoration:none;
+  border:1px solid var(--line);
+  font-size:16px;line-height:1;
+  transition:color .2s,border-color .2s,transform .2s;
+}
+.home-link:hover{color:var(--ink);border-color:#3a3a40;transform:translateX(-2px)}
+.wordmark{
+  font-family:var(--serif);
+  font-size:20px;
+  letter-spacing:.12em;
+  line-height:1;
+  user-select:none;
+}
+.wordmark span{
+  display:inline-block;
+  margin-left:8px;
+  font-family:var(--mono);
+  font-size:8px;
+  letter-spacing:.18em;
+  color:var(--dim);
+  vertical-align:3px;
+}
+.icon-btn{
+  min-width:34px;height:34px;padding:0 11px;
+  border-radius:999px;border:1px solid var(--line);
+  color:var(--muted);font-size:11px;letter-spacing:.08em;
+  transition:color .2s,border-color .2s,background .2s;
+}
+.icon-btn:hover{color:var(--ink);border-color:#3a3a40;background:rgba(255,255,255,.025)}
+
+.stage{
+  width:min(880px,calc(100% - 28px));
+  padding-bottom:26px;
+  flex:1 0 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+.hud{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:end;
+  gap:14px;
+  min-height:46px;
+  margin:2px 2px 12px;
+  user-select:none;
+}
+.hud-level{
+  display:flex;align-items:baseline;gap:7px;min-width:0;
+}
+.hud-no{
+  font-family:var(--mono);font-size:9px;color:var(--gold);opacity:.8;letter-spacing:.14em;
+}
+.hud-name{
+  font-family:var(--serif);font-size:20px;letter-spacing:.08em;white-space:nowrap;
+}
+.hud-shots{
+  justify-self:center;
+  display:flex;align-items:baseline;gap:6px;
+  color:var(--muted);font-size:12px;letter-spacing:.06em;
+}
+.hud-shots b{font-family:var(--mono);font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.hud-blooms{
+  justify-self:end;
+  display:flex;align-items:center;gap:7px;
+  color:var(--muted);font-size:12px;letter-spacing:.06em;
+}
+.hud-blooms .flower{
+  display:inline-block;width:9px;height:9px;border-radius:50%;
+  background:#2c2c31;transition:background .3s,box-shadow .3s,transform .3s;
+}
+.hud-blooms .flower.lit{background:var(--green);box-shadow:0 0 8px rgba(61,220,151,.5);transform:scale(1.15)}
+
+.board-shell{
+  position:relative;
+  margin:0 auto;
+  width:100%;
+  background:#101013;
+  border:1px solid #28282d;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.52),
+    0 2px 0 rgba(255,255,255,.025) inset,
+    0 0 0 1px rgba(0,0,0,.5);
+  isolation:isolate;
+}
+.board-shell::after{
+  content:"";
+  position:absolute;inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 0 0 70px rgba(0,0,0,.5);
+  z-index:1;
+}
+#game{
+  display:block;
+  width:100%;height:100%;
+  background:#101013;
+  cursor:pointer;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  outline:none;
+}
+
+.tip-bubble{
+  position:absolute;left:50%;top:12%;z-index:5;
+  transform:translate(-50%,-8px);
+  max-width:min(84%,440px);
+  padding:10px 16px;
+  border-radius:999px;
+  border:1px solid rgba(243,201,105,.28);
+  background:rgba(14,14,16,.93);
+  box-shadow:0 8px 30px rgba(0,0,0,.35),0 0 24px rgba(243,201,105,.04);
+  color:#e9e6de;
+  font-size:12.5px;
+  letter-spacing:.04em;
+  line-height:1.5;
+  text-align:center;
+  pointer-events:none;
+  opacity:0;visibility:hidden;
+  transition:opacity .25s,transform .25s,visibility .25s;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.tip-bubble.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.toast{
+  position:absolute;left:50%;bottom:8%;z-index:5;
+  transform:translate(-50%,8px);
+  max-width:84%;
+  padding:8px 14px;border-radius:8px;
+  border:1px solid #2e2e33;
+  background:rgba(15,15,17,.92);
+  color:#a9a7a1;font-size:11.5px;letter-spacing:.03em;
+  line-height:1.5;text-align:center;
+  pointer-events:none;
+  opacity:0;visibility:hidden;
+  transition:opacity .22s,transform .22s,visibility .22s;
+}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+.controls{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px 20px;
+  margin-top:12px;
+  flex-wrap:wrap;
+  user-select:none;
+}
+.hint-line{
+  display:flex;align-items:center;gap:9px;
+  min-width:0;
+  color:#9b9992;font-size:12px;letter-spacing:.045em;
+  line-height:1.4;
+}
+.pulse-dot{
+  width:5px;height:5px;flex:0 0 auto;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 0 rgba(243,201,105,.4);
+  animation:dotPulse 2.2s infinite;
+}
+@keyframes dotPulse{
+  0%{box-shadow:0 0 0 0 rgba(243,201,105,.32)}
+  70%{box-shadow:0 0 0 7px rgba(243,201,105,0)}
+  100%{box-shadow:0 0 0 0 rgba(243,201,105,0)}
+}
+.control-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.btn-primary{
+  min-height:44px;
+  padding:0 22px;border-radius:999px;
+  background:var(--ink);color:#0a0a0b;
+  font-size:12px;letter-spacing:.12em;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .2s,transform .2s,box-shadow .2s;
+  box-shadow:0 6px 28px rgba(238,236,229,.08);
+}
+.btn-primary:hover{background:#fff;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.btn-ghost{
+  padding:9px 15px;border-radius:999px;
+  border:1px solid #2d2d32;
+  color:#aaa8a1;font-size:11.5px;letter-spacing:.08em;
+  transition:border-color .2s,color .2s,background .2s,transform .2s;
+}
+.btn-ghost:hover{border-color:#48484f;color:var(--ink);background:rgba(255,255,255,.03)}
+.btn-ghost:active{transform:translateY(1px)}
+.site-foot{
+  width:min(880px,calc(100% - 28px));
+  padding:0 2px max(18px,env(safe-area-inset-bottom));
+  color:#3d3d42;
+  font-size:9px;letter-spacing:.2em;
+  display:flex;justify-content:space-between;align-items:center;
+  flex:0 0 auto;
+}
+.site-foot a{color:#4c4c52;text-decoration:none;transition:color .2s}
+.site-foot a:hover{color:#8a8a90}
+
+/* 全屏层：标题 / 结算 */
+.screen{
+  position:fixed;inset:0;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  padding:max(22px,env(safe-area-inset-top)) 20px max(22px,env(safe-area-inset-bottom));
+  overflow-y:auto;
+  background:
+    radial-gradient(circle at 50% 16%,rgba(61,220,151,.08),transparent 32%),
+    radial-gradient(circle at 50% 100%,rgba(110,231,216,.03),transparent 38%),
+    rgba(7,7,9,.92);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .38s ease,visibility .38s;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+.screen.show{opacity:1;visibility:visible;pointer-events:auto}
+.screen-inner{width:min(680px,100%);text-align:center;padding:20px 0}
+.eyebrow{
+  margin:0 0 18px;
+  color:var(--gold);font-family:var(--mono);
+  font-size:9px;letter-spacing:.32em;
+  opacity:.82;
+}
+.title{
+  margin:0;
+  font-family:var(--serif);
+  font-size:clamp(52px,11vw,108px);
+  font-weight:500;
+  line-height:.9;
+  letter-spacing:.04em;
+  text-indent:.04em;
+  text-shadow:0 0 70px rgba(61,220,151,.12);
+  user-select:none;
+}
+.title-sub{
+  margin:18px 0 0;
+  font-family:var(--serif);
+  font-size:clamp(15px,2.6vw,19px);
+  letter-spacing:.24em;
+  color:#9b9a94;
+}
+.title-desc{
+  margin:16px 0 0;
+  color:#74747b;
+  font-size:12.5px;line-height:2;letter-spacing:.08em;
+}
+.title-desc b{color:#bdbab2;font-weight:500}
+.title-buttons{
+  margin:28px auto 0;
+  display:flex;justify-content:center;align-items:stretch;
+  gap:10px;flex-wrap:wrap;
+}
+.btn-primary.big{min-height:50px;padding:0 34px;font-size:13.5px}
+.btn-secondary{
+  min-height:50px;
+  padding:8px 22px;border-radius:999px;
+  border:1px solid #303036;
+  background:rgba(255,255,255,.018);
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+.btn-secondary:hover{border-color:#494950;background:rgba(255,255,255,.035);transform:translateY(-1px)}
+.btn-secondary span{font-size:12px;letter-spacing:.13em;color:#d8d5ce}
+.btn-secondary small{font-size:9px;letter-spacing:.08em;color:#65656b}
+.level-select{
+  margin:30px auto 0;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  width:min(640px,100%);
+}
+.level-chip{
+  min-width:0;
+  padding:13px 8px 11px;
+  border:1px solid #29292e;border-radius:13px;
+  background:rgba(255,255,255,.012);
+  text-align:center;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+.level-chip:hover{border-color:#46464d;background:rgba(255,255,255,.035);transform:translateY(-2px)}
+.level-chip .lc-no{display:block;font-family:var(--mono);font-size:8px;color:var(--gold);opacity:.7;letter-spacing:.16em}
+.level-chip .lc-name{display:block;margin-top:4px;font-size:12px;letter-spacing:.06em;color:#d3d0c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.level-chip .lc-stars{display:block;margin-top:5px;font-size:10px;letter-spacing:1.5px;color:var(--gold);opacity:.9;min-height:12px}
+.level-chip .lc-stars .empty{color:#34343a}
+.tiny-note{
+  margin:26px 0 0;
+  color:#424247;font-size:9.5px;letter-spacing:.16em;
+}
+
+/* 结算卡 */
+.result-card{
+  width:min(520px,100%);
+  position:relative;
+  padding:38px 30px 30px;
+  border:1px solid #2b2b30;
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(61,220,151,.07),transparent 40%),
+    linear-gradient(180deg,#151517,#0f0f11);
+  box-shadow:0 40px 100px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.035) inset;
+  text-align:center;
+  overflow:hidden;
+}
+.result-card::before{
+  content:"";position:absolute;left:15%;right:15%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(61,220,151,.45),transparent);
+}
+.result-card h2{
+  margin:0;
+  font-family:var(--serif);font-weight:500;
+  font-size:clamp(34px,7vw,50px);
+  letter-spacing:.12em;
+}
+.big-stars{
+  margin:17px 0 6px;
+  font-size:42px;line-height:1;letter-spacing:8px;
+  color:var(--gold);
+  min-height:48px;
+  display:flex;justify-content:center;gap:2px;
+}
+.big-stars .star{
+  display:inline-block;
+  opacity:0;transform:translateY(7px) scale(.86);
+  animation:starIn .48s cubic-bezier(.2,.8,.2,1) forwards;
+  filter:drop-shadow(0 0 10px rgba(243,201,105,.18));
+}
+.big-stars .star.empty{color:#2f2f35;animation:none;opacity:1;transform:none}
+.big-stars .star:nth-child(2){animation-delay:.1s}
+.big-stars .star:nth-child(3){animation-delay:.2s}
+@keyframes starIn{to{opacity:1;transform:translateY(0) scale(1)}}
+.result-copy{
+  margin:14px auto 0;
+  max-width:400px;
+  color:#b2afa7;
+  font-size:13px;line-height:1.9;letter-spacing:.05em;
+}
+.result-actions{
+  margin-top:28px;
+  display:flex;justify-content:center;align-items:center;
+  gap:8px;flex-wrap:wrap;
+}
+.result-actions .btn-primary{min-height:43px;padding:0 24px;font-size:12px}
+.result-actions .btn-ghost{min-height:43px;padding:0 16px;display:inline-flex;align-items:center}
+
+@media (max-width:640px){
+  .topbar{width:calc(100% - 16px);height:calc(54px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+  .stage,.site-foot{width:calc(100% - 16px)}
+  .wordmark{font-size:17px}
+  .wordmark span{display:none}
+  .icon-btn{min-width:38px;height:38px;padding:0 10px;font-size:10.5px}
+  .hud{min-height:42px;margin-bottom:9px}
+  .hud-name{font-size:17px}
+  .hud-shots b{font-size:18px}
+  .level-select{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .site-foot{font-size:8px;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+  .controls{gap:9px 10px}
+  .control-actions{width:100%;justify-content:space-between}
+  .hint-line{font-size:11px;min-height:17px}
+  .btn-primary{min-height:42px;padding:0 16px;font-size:11px}
+  .btn-ghost{padding:8px 12px;font-size:10.5px;min-height:40px;display:inline-flex;align-items:center}
+  .title-buttons{margin-top:24px}
+  .title-desc{font-size:11.5px}
+  .result-card{padding:30px 18px 23px;border-radius:22px}
+  .big-stars{font-size:34px;letter-spacing:5px}
+}
+@media (max-width:380px){
+  .wordmark{font-size:15px}
+  .hud-name{font-size:15px}
+  .hud-shots{font-size:10.5px}
+  .hud-blooms{font-size:10.5px}
+  .level-select{gap:6px}
+}
+@media (max-height:700px){.screen{align-items:flex-start}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="home-link" href="index.html" title="Back to home" aria-label="Back to home">←</a>
+      <div class="wordmark">ECHO GARDEN <span>回声花园</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="soundBtn" type="button" aria-label="Toggle sound">SOUND</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="hud" aria-live="polite">
+      <div class="hud-level">
+        <span class="hud-no" id="levelNo">01</span>
+        <span class="hud-name" id="levelName">First Bloom</span>
+      </div>
+      <div class="hud-shots">Rings <b id="shotValue">0</b></div>
+      <div class="hud-blooms" id="bloomMeter" aria-label="Flowers bloomed"></div>
+    </div>
+
+    <div class="board-shell" id="canvasWrap">
+      <canvas id="game" tabindex="0" aria-label="Echo Garden. Tap a mirror to turn it, tap the bell or press the Ring button to send out an echo." role="application"></canvas>
+      <div class="tip-bubble" id="tipBubble" role="status"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+
+    <div class="controls">
+      <div class="hint-line">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <span id="hintText">Tap a mirror to turn it.</span>
+      </div>
+      <div class="control-actions">
+        <button class="btn-ghost" id="resetBtn" type="button">Reset Mirrors</button>
+        <button class="btn-primary" id="ringBtn" type="button">🔔 Ring the Bell</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <span>One echo, many flowers.</span>
+    <span><a href="index.html">Back to site</a></span>
+  </footer>
+</div>
+
+<!-- Title screen -->
+<div class="screen" id="titleScreen" aria-hidden="true">
+  <div class="screen-inner">
+    <p class="eyebrow">A QUIET PUZZLE ABOUT SOUND</p>
+    <h1 class="title">Echo Garden<span>.</span></h1>
+    <p class="title-sub">回声花园</p>
+    <p class="title-desc">
+      A sleeping garden. <b>One bell</b>, one echo.<br>
+      Turn the mirrors so a single ring wakes every flower.
+    </p>
+    <div class="title-buttons">
+      <button class="btn-primary big" id="startBtn" type="button">Start</button>
+      <button class="btn-secondary" id="howBtn" type="button">
+        <span>How to play</span>
+        <small>Tap a mirror · Ring · Bloom</small>
+      </button>
+    </div>
+    <div class="level-select" id="levelSelect" aria-label="Choose a level"></div>
+    <p class="tiny-note">Mouse / touch · Tap a mirror to turn it · Space to ring</p>
+  </div>
+</div>
+
+<!-- Result screen -->
+<div class="screen" id="resultScreen" aria-hidden="true">
+  <div class="result-card">
+    <p class="eyebrow" id="resultEyebrow">BLOOMED</p>
+    <h2 id="resultTitle">Garden Woken</h2>
+    <div class="big-stars" id="resultStars" aria-label="Rating"></div>
+    <p class="result-copy" id="resultCopy"></p>
+    <div class="result-actions" id="resultActions"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ==========================================================
+     01. 常量区
+     ========================================================== */
+  const COLS = 9;
+  const ROWS = 7;
+  const STORE_KEY = 'echo-garden.save.v1';
+
+  const DIRS = [
+    { x: 0, y: -1 },  // 0 up
+    { x: 1, y: 0 },   // 1 right
+    { x: 0, y: 1 },   // 2 down
+    { x: -1, y: 0 }   // 3 left
+  ];
+
+  // 镜面反射表：ori 0 = '/'，ori 1 = '\'
+  const REFLECT = [
+    { 0: 1, 1: 0, 2: 3, 3: 2 },  // '/' : up->right, right->up, down->left, left->down
+    { 0: 3, 1: 2, 2: 1, 3: 0 }   // '\' : up->left, right->down, down->right, left->up
+  ];
+
+  const COLORS = {
+    bg: '#101013',
+    grid: '#1d1d21',
+    wall: '#141416',
+    ink: '#eeece5',
+    muted: '#8b8b91',
+    gold: '#f3c969',
+    cyan: '#6ee7d8',
+    green: '#3ddc97',
+    mirror: '#e5b85c'
+  };
+
+  const FONT_SANS = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif';
+
+  /* ==========================================================
+     02. 关卡数据区
+     网格字符：# 墙 / . 地面 / S 铃（声源）/ F 花 / M 镜子
+     mirrors 列表给出每面镜子的坐标与初始朝向（0='/'，1='\'）。
+     每个关卡都有一条手绘的可解路径，初始朝向刻意放错，需玩家调整。
+     ========================================================== */
+  const LEVELS = [
+    {
+      id: 'L1',
+      name: 'First Bloom',
+      hint: 'Tap the bell, or press Ring. The echo travels straight.',
+      grid: [
+        '#########',
+        '#S...F..#',
+        '#.......#',
+        '#.......#',
+        '#.......#',
+        '#.......#',
+        '#########'
+      ],
+      startDir: 1,
+      mirrors: []
+    },
+    {
+      id: 'L2',
+      name: 'The Turning Mirror',
+      hint: 'Turn the mirror so the echo bends toward the flower.',
+      grid: [
+        '#########',
+        '#S...M..#',
+        '#.......#',
+        '#....F..#',
+        '#.......#',
+        '#.......#',
+        '#########'
+      ],
+      startDir: 1,
+      mirrors: [ { x: 5, y: 1, ori: 0 } ]   // 正确应为 '\'(1)
+    },
+    {
+      id: 'L3',
+      name: 'Around the Corner',
+      hint: 'Two mirrors. Down, then left.',
+      grid: [
+        '#########',
+        '#S..M...#',
+        '#.......#',
+        '#.......#',
+        '#F..M...#',
+        '#.......#',
+        '#########'
+      ],
+      startDir: 1,
+      mirrors: [ { x: 4, y: 1, ori: 0 }, { x: 4, y: 4, ori: 1 } ]   // 正确 '\'(1) 与 '/'(0)
+    },
+    {
+      id: 'L4',
+      name: 'The Detour',
+      hint: 'Three mirrors, two flowers. Down, left, then down again.',
+      grid: [
+        '#########',
+        '#S..M...#',
+        '#.......#',
+        '#.......#',
+        '#.MFM....#',
+        '#..F....#',
+        '#########'
+      ],
+      startDir: 1,
+      mirrors: [
+        { x: 4, y: 1, ori: 0 },   // 正确 '\'(1)
+        { x: 4, y: 4, ori: 1 },   // 正确 '/'(0)
+        { x: 2, y: 4, ori: 1 }    // 正确 '/'(0)
+      ]
+    },
+    {
+      id: 'L5',
+      name: 'The Full Garden',
+      hint: 'Four mirrors, three flowers. Weave one long thread.',
+      grid: [
+        '#########',
+        '#S..M...#',
+        '#.......#',
+        '#...M.FM#',
+        '#.......#',
+        '#..F.F.M#',
+        '#########'
+      ],
+      startDir: 1,
+      mirrors: [
+        { x: 4, y: 1, ori: 0 },   // 正确 '\'(1)
+        { x: 4, y: 3, ori: 0 },   // 正确 '\'(1)
+        { x: 7, y: 3, ori: 0 },   // 正确 '\'(1)
+        { x: 7, y: 5, ori: 1 }    // 正确 '/'(0)
+      ]
+    }
+  ];
+
+  /* ==========================================================
+     03. 工具
+     ========================================================== */
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+  const keyOf = (x, y) => y * COLS + x;
+  const cellKey = (x, y) => x + ',' + y;
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function reflect(dir, ori) { return REFLECT[ori][dir]; }
+
+  /* ==========================================================
+     04. 存档
+     ========================================================== */
+  const DEFAULT_PROFILE = { levels: {}, muted: false };
+  let profile = loadProfile();
+
+  function loadProfile() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+      const data = JSON.parse(raw);
+      return {
+        levels: (data && typeof data.levels === 'object') ? data.levels : {},
+        muted: !!(data && data.muted)
+      };
+    } catch (e) {
+      return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    }
+  }
+  function saveProfile() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(profile)); } catch (e) { /* 忽略 */ }
+  }
+
+  /* ==========================================================
+     05. 音效（Web Audio，现场合成）
+     ========================================================== */
+  const Sound = (() => {
+    let ac = null;
+    let master = null;
+    let muted = !!profile.muted;
+
+    function ensure() {
+      if (!muted && !ac) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try {
+          ac = new AC();
+          master = ac.createGain();
+          master.gain.value = 0.5;
+          master.connect(ac.destination);
+        } catch (e) { ac = null; }
+      }
+      if (!ac) return null;
+      if (ac.state === 'suspended') ac.resume().catch(() => {});
+      return ac;
+    }
+
+    function tone(freq, dur, type, vol, slideTo, delay) {
+      if (muted) return;
+      const ctx = ensure();
+      if (!ctx || !master) return;
+      const t0 = ctx.currentTime + (delay || 0);
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(Math.max(20, freq), t0);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(20, slideTo), t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol || 0.08), t0 + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.03);
+    }
+
+    function ring() {
+      tone(660, 0.35, 'triangle', 0.09, 1320);
+      tone(1320, 0.5, 'sine', 0.05, 660, 0.02);
+      tone(220, 0.4, 'sine', 0.05, 110, 0.03);
+    }
+    function click() {
+      tone(420, 0.06, 'sine', 0.05, 640);
+    }
+    function reflectSnd() {
+      tone(300, 0.1, 'triangle', 0.06, 720);
+    }
+    function bloom(step) {
+      const f = 520 * Math.pow(1.12, (step || 0) % 8);
+      tone(f, 0.22, 'sine', 0.06, f * 1.5);
+    }
+    function win() {
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach((f, i) => {
+        tone(f, 0.34, 'triangle', 0.06, f * 1.002, i * 0.09);
+        tone(f / 2, 0.3, 'sine', 0.024, f / 2, i * 0.09);
+      });
+    }
+    function ui() { tone(520, 0.04, 'sine', 0.03, 660); }
+    function setMuted(next) {
+      muted = !!next;
+      profile.muted = muted;
+      saveProfile();
+      if (muted) {
+        if (master) master.gain.value = 0;
+      } else {
+        ensure();
+        if (master) master.gain.value = 0.5;
+        tone(520, 0.08, 'sine', 0.04, 780);
+      }
+    }
+    return { ensure, ring, click, reflectSnd, bloom, win, ui, setMuted, get muted() { return muted; } };
+  })();
+
+  /* ==========================================================
+     06. 游戏状态
+     ========================================================== */
+  const canvas = $('#game');
+  const ctx = canvas.getContext('2d');
+  const wrapEl = $('#canvasWrap');
+  const canvasView = { w: 0, h: 0, cw: 0, ch: 0, dpr: 1 };
+
+  const app = { mode: 'story', currentDef: null, meta: null };
+
+  let game = null;
+  let lastFrame = performance.now();
+  let tipTimer = 0;
+  let toastTimer = 0;
+  let rafId = 0;
+
+  function createGame(levelDef) {
+    const grid = levelDef.grid.map(row => row.split(''));
+    const source = { x: 0, y: 0, dir: levelDef.startDir || 1 };
+    const flowers = [];
+    const mirrors = [];
+
+    // 找声源与花朵
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (grid[y][x] === 'S') { source.x = x; source.y = y; grid[y][x] = '.'; }
+        else if (grid[y][x] === 'F') { flowers.push({ x, y }); }
+        else if (grid[y][x] === 'M') { grid[y][x] = '.'; }
+      }
+    }
+
+    // 镜子：以列表为准（网格里的 M 仅作阅读标记，此处已被替换为地面）
+    for (const m of levelDef.mirrors) {
+      mirrors.push({ x: m.x, y: m.y, ori: m.ori, startOri: m.ori });
+    }
+
+    const mirrorMap = {};
+    for (const m of mirrors) mirrorMap[cellKey(m.x, m.y)] = m;
+
+    return {
+      level: levelDef,
+      grid,
+      source,
+      flowers,
+      mirrors,
+      mirrorMap,
+      bloomed: new Set(),
+      bloomT: {},          // 每朵花的绽放进度 0..1
+      shots: 0,
+      status: 'playing',   // playing | firing | won
+      fire: null,          // { cells, index, nextAt, ended }
+      echoPos: null,       // { x, y }
+      trail: [],           // 已走过的格子（用于拖尾）
+      fx: [],
+      shake: 0
+    };
+  }
+
+  function mirrorAt(x, y) { return game.mirrorMap[cellKey(x, y)]; }
+
+  /* ==========================================================
+     07. 回声路径计算
+     ========================================================== */
+  function computePath() {
+    const g = game;
+    const cells = [];
+    const seen = new Set();
+    let x = g.source.x, y = g.source.y, dir = g.source.dir;
+    let ended = 'wall';
+
+    for (let i = 0; i < 100000; i++) {
+      const st = keyOf(x, y) * 4 + dir;
+      if (seen.has(st)) { ended = 'loop'; break; }
+      seen.add(st);
+
+      const nx = x + DIRS[dir].x;
+      const ny = y + DIRS[dir].y;
+      if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) { ended = 'wall'; break; }
+      const cell = g.grid[ny][nx];
+      if (cell === '#') { ended = 'wall'; break; }
+
+      x = nx; y = ny;
+      if (cell === 'M' || mirrorAt(x, y)) {
+        const m = mirrorAt(x, y);
+        dir = reflect(dir, m ? m.ori : 0);
+        cells.push({ x, y, event: 'reflect' });
+      } else if (cell === 'F') {
+        cells.push({ x, y, event: 'flower' });
+      } else {
+        cells.push({ x, y, event: 'move' });
+      }
+    }
+    return { cells, ended };
+  }
+
+  /* ==========================================================
+     08. 开始发射回声
+     ========================================================== */
+  function fireEcho() {
+    const g = game;
+    if (!g || g.status === 'firing') return;
+    Sound.ensure();
+    g.status = 'firing';
+    g.shots += 1;
+    g.bloomed = new Set();
+    for (const f of g.flowers) g.bloomT[cellKey(f.x, f.y)] = 0;
+
+    const path = computePath();
+    g.fire = {
+      cells: path.cells,
+      ended: path.ended,
+      index: -1,
+      nextAt: performance.now() + 120
+    };
+    g.trail = [];
+    g.echoPos = { x: g.source.x, y: g.source.y };
+    Sound.ring();
+    addRing(g, g.source.x, g.source.y, COLORS.cyan, 0.9, 480, 2.2);
+    updateHud();
+    updateControls();
+  }
+
+  function stepFire(now) {
+    const g = game;
+    const f = g.fire;
+    if (!f) return;
+
+    f.index += 1;
+    if (f.index >= f.cells.length) {
+      // 回声走完
+      finishFire();
+      return;
+    }
+
+    const cell = f.cells[f.index];
+    g.echoPos = { x: cell.x, y: cell.y };
+    g.trail.push({ x: cell.x, y: cell.y });
+
+    if (cell.event === 'flower') {
+      g.bloomed.add(cellKey(cell.x, cell.y));
+      g.bloomT[cellKey(cell.x, cell.y)] = 1;
+      Sound.bloom(g.bloomed.size);
+      addRing(g, cell.x, cell.y, COLORS.green, 0.6, 420, 1.6);
+      addParticleBurst(g, cell.x, cell.y, COLORS.green, 8);
+      updateHud();
+    } else if (cell.event === 'reflect') {
+      Sound.reflectSnd();
+      addRing(g, cell.x, cell.y, COLORS.mirror, 0.45, 320, 1.4);
+    }
+
+    f.nextAt = now + (cell.event === 'reflect' ? 150 : 110);
+  }
+
+  function finishFire() {
+    const g = game;
+    g.status = 'playing';
+    g.fire = null;
+    g.echoPos = null;
+
+    if (g.bloomed.size >= g.flowers.length && g.flowers.length > 0) {
+      g.status = 'won';
+      const stars = g.shots <= 1 ? 3 : (g.shots <= 3 ? 2 : 1);
+      const prev = profile.levels[g.level.id];
+      profile.levels[g.level.id] = {
+        stars: Math.max((prev && prev.stars) || 0, stars)
+      };
+      saveProfile();
+      Sound.win();
+      addParticleBurst(g, g.source.x, g.source.y, COLORS.gold, 18);
+      window.setTimeout(() => showResult(stars), 350);
+    } else {
+      const remaining = g.flowers.length - g.bloomed.size;
+      showToast(remaining > 0
+        ? 'The echo faded. ' + remaining + ' flower' + (remaining === 1 ? '' : 's') + ' still asleep — adjust a mirror and ring again.'
+        : 'The echo found no flowers. Aim it better.');
+    }
+    updateControls();
+  }
+
+  function resetMirrors() {
+    const g = game;
+    if (!g || g.status === 'firing') return;
+    for (const m of g.mirrors) m.ori = m.startOri;
+    Sound.click();
+    showToast('Mirrors returned to their starting angles.');
+    render(performance.now());
+  }
+
+  function toggleMirror(x, y) {
+    const g = game;
+    if (!g || g.status === 'firing') return;
+    const m = mirrorAt(x, y);
+    if (!m) return;
+    m.ori = 1 - m.ori;
+    Sound.click();
+    addRing(g, x, y, COLORS.mirror, 0.35, 260, 1.2);
+  }
+
+  /* ==========================================================
+     09. 结算 / 界面
+     ========================================================== */
+  function starGlyphs(n) {
+    return [0, 1, 2].map(i =>
+      '<span class="star' + (i < n ? '' : ' empty') + '">' + (i < n ? '★' : '☆') + '</span>'
+    ).join('');
+  }
+
+  function showResult(stars) {
+    const copy = stars === 3
+      ? 'One clear ring. The whole garden woke in a single breath.'
+      : stars === 2
+        ? 'A little tuning, then the garden woke. Lovely.'
+        : 'You found a path. Sometimes a longer road still blooms.';
+    $('#resultEyebrow').textContent = 'BLOOMED';
+    $('#resultTitle').textContent = game.level.name;
+    $('#resultStars').innerHTML = starGlyphs(stars);
+    $('#resultCopy').textContent = copy;
+
+    const idx = LEVELS.indexOf(game.level);
+    const actions = $('#resultActions');
+    actions.innerHTML = '';
+    const btnReplay = document.createElement('button');
+    btnReplay.className = 'btn-ghost';
+    btnReplay.textContent = 'Replay';
+    btnReplay.addEventListener('click', () => { hideScreens(); loadLevel(game.level); });
+    actions.appendChild(btnReplay);
+
+    if (idx < LEVELS.length - 1) {
+      const btnNext = document.createElement('button');
+      btnNext.className = 'btn-primary';
+      btnNext.textContent = 'Next →';
+      btnNext.addEventListener('click', () => { hideScreens(); loadLevel(LEVELS[idx + 1]); });
+      actions.appendChild(btnNext);
+    }
+
+    const btnMenu = document.createElement('button');
+    btnMenu.className = 'btn-ghost';
+    btnMenu.textContent = 'Menu';
+    btnMenu.addEventListener('click', () => { hideScreens(); showTitle(); });
+    actions.appendChild(btnMenu);
+
+    showScreen('#resultScreen');
+  }
+
+  function showScreen(sel) {
+    const el = $(sel);
+    el.classList.add('show');
+    el.setAttribute('aria-hidden', 'false');
+  }
+  function hideScreens() {
+    $$('.screen').forEach(s => { s.classList.remove('show'); s.setAttribute('aria-hidden', 'true'); });
+  }
+
+  function showTitle() {
+    hideScreens();
+    buildLevelSelect();
+    showScreen('#titleScreen');
+  }
+
+  function buildLevelSelect() {
+    const wrap = $('#levelSelect');
+    wrap.innerHTML = '';
+    LEVELS.forEach((lv, i) => {
+      const saved = profile.levels[lv.id];
+      const stars = saved ? saved.stars : 0;
+      const chip = document.createElement('button');
+      chip.className = 'level-chip';
+      chip.type = 'button';
+      chip.innerHTML =
+        '<span class="lc-no">' + pad2(i + 1) + '</span>' +
+        '<span class="lc-name">' + lv.name + '</span>' +
+        '<span class="lc-stars">' + starGlyphs(stars) + '</span>';
+      chip.addEventListener('click', () => { hideScreens(); loadLevel(lv); });
+      wrap.appendChild(chip);
+    });
+  }
+
+  function loadLevel(def) {
+    game = createGame(def);
+    app.currentDef = def;
+    $('#levelNo').textContent = pad2(LEVELS.indexOf(def) + 1);
+    $('#levelName').textContent = def.name;
+    $('#hintText').textContent = def.hint;
+    updateHud();
+    updateControls();
+    fitCanvas();
+    render(performance.now());
+  }
+
+  function updateHud() {
+    const g = game;
+    if (!g) return;
+    $('#shotValue').textContent = g.shots;
+    const meter = $('#bloomMeter');
+    meter.innerHTML = '';
+    g.flowers.forEach(f => {
+      const span = document.createElement('span');
+      span.className = 'flower' + (g.bloomed.has(cellKey(f.x, f.y)) ? ' lit' : '');
+      meter.appendChild(span);
+    });
+  }
+
+  function updateControls() {
+    const g = game;
+    const firing = !!(g && g.status === 'firing');
+    $('#ringBtn').disabled = firing;
+    $('#resetBtn').disabled = firing;
+    if (g) {
+      $('#ringBtn').textContent = firing ? '◌ Listening…' : '🔔 Ring the Bell';
+    }
+  }
+
+  function showTip(text, ms) {
+    const el = $('#tipBubble');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => el.classList.remove('show'), ms || 2600);
+  }
+  function showToast(text) {
+    const el = $('#toast');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+  }
+
+  /* ==========================================================
+     10. 粒子
+     ========================================================== */
+  function addRing(g, x, y, color, maxR, dur, width) {
+    if (!g) return;
+    g.fx.push({ type: 'ring', x, y, color, maxR, start: performance.now(), dur: dur || 400, width: width || 2 });
+  }
+  function addParticleBurst(g, x, y, color, count) {
+    if (!g) return;
+    const now = performance.now();
+    for (let i = 0; i < (count || 8); i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = 0.5 + Math.random() * 1.1;
+      g.fx.push({
+        type: 'particle', x, y, color,
+        vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+        start: now, dur: 320 + Math.random() * 380,
+        size: 0.02 + Math.random() * 0.03
+      });
+    }
+  }
+
+  /* ==========================================================
+     11. 渲染
+     ========================================================== */
+  function fitCanvas() {
+    const stage = $('.stage');
+    const stageW = stage ? stage.getBoundingClientRect().width : Math.min(window.innerWidth - 28, 880);
+    const w = Math.max(280, Math.min(stageW, 640));
+    const h = Math.floor(w * ROWS / COLS);
+
+    wrapEl.style.width = w + 'px';
+    wrapEl.style.height = h + 'px';
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+
+    const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    canvasView.w = w;
+    canvasView.h = h;
+    canvasView.cw = w / COLS;
+    canvasView.ch = h / ROWS;
+    canvasView.dpr = dpr;
+  }
+
+  function cellCenter(x, y) {
+    return { x: (x + 0.5) * canvasView.cw, y: (y + 0.5) * canvasView.ch };
+  }
+  function cellR() {
+    return Math.min(canvasView.cw, canvasView.ch);
+  }
+
+  function render(now) {
+    const g = game;
+    if (!g || !canvasView.w) return;
+    const W = canvasView.w, H = canvasView.h;
+    ctx.setTransform(canvasView.dpr, 0, 0, canvasView.dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    ctx.save();
+    if (g.shake > 0.05) {
+      const s = g.shake * 1.2;
+      ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s);
+    }
+    drawBoard(g, now);
+    drawMirrors(g, now);
+    drawFlowers(g, now);
+    drawEchoTrail(g, now);
+    drawSource(g, now);
+    drawFx(g, now);
+    ctx.restore();
+
+    // 暗角
+    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.8);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,.32)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawBoard(g) {
+    const cw = canvasView.cw, ch = canvasView.ch;
+    ctx.fillStyle = COLORS.bg;
+    ctx.fillRect(-10, -10, canvasView.w + 20, canvasView.h + 20);
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const px = x * cw, py = y * ch;
+        if (g.grid[y][x] === '#') {
+          ctx.fillStyle = COLORS.wall;
+          ctx.fillRect(px, py, cw + 0.5, ch + 0.5);
+          ctx.fillStyle = 'rgba(255,255,255,.028)';
+          ctx.fillRect(px + cw * 0.16, py + ch * 0.16, cw * 0.68, ch * 0.68);
+        } else {
+          ctx.fillStyle = COLORS.bg;
+          ctx.fillRect(px, py, cw + 0.5, ch + 0.5);
+        }
+      }
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = COLORS.grid;
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) { ctx.moveTo(x * cw, 0); ctx.lineTo(x * cw, canvasView.h); }
+    for (let y = 0; y <= ROWS; y++) { ctx.moveTo(0, y * ch); ctx.lineTo(canvasView.w, y * ch); }
+    ctx.stroke();
+
+    // 声源周围微光
+    const sp = cellCenter(g.source.x, g.source.y);
+    const glow = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, cw * 2.2);
+    glow.addColorStop(0, 'rgba(110,231,216,.06)');
+    glow.addColorStop(1, 'rgba(110,231,216,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(sp.x - cw * 2.2, sp.y - cw * 2.2, cw * 4.4, cw * 4.4);
+  }
+
+  function drawMirrors(g, now) {
+    const r = cellR();
+    for (const m of g.mirrors) {
+      const p = cellCenter(m.x, m.y);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      const d = r * 0.32;
+      ctx.strokeStyle = 'rgba(243,201,105,.92)';
+      ctx.lineWidth = Math.max(2.5, r * 0.13);
+      ctx.lineCap = 'round';
+      ctx.shadowColor = 'rgba(243,201,105,.35)';
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      if (m.ori === 0) { ctx.moveTo(-d, d); ctx.lineTo(d, -d); }
+      else { ctx.moveTo(-d, -d); ctx.lineTo(d, d); }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.055, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(243,201,105,.9)';
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawFlowers(g, now) {
+    const r = cellR();
+    for (const f of g.flowers) {
+      const key = cellKey(f.x, f.y);
+      let t = g.bloomT[key] || 0;
+      const target = g.bloomed.has(key) ? 1 : 0;
+      t += (target - t) * 0.16;
+      if (Math.abs(target - t) < 0.001) t = target;
+      g.bloomT[key] = t;
+
+      const p = cellCenter(f.x, f.y);
+      drawFlower(p.x, p.y, r, t);
+    }
+  }
+
+  function drawFlower(cx, cy, r, bloom) {
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // 茎
+    ctx.strokeStyle = 'rgba(61,220,151,.28)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, r * 0.08);
+    ctx.lineTo(0, r * 0.38);
+    ctx.stroke();
+
+    if (bloom <= 0.02) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.15, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(61,220,151,.42)';
+      ctx.fill();
+    } else {
+      const center = r * 0.34 * bloom;
+      const petalR = r * 0.16 * (0.5 + 0.5 * bloom);
+      for (let i = 0; i < 5; i++) {
+        const a = -Math.PI / 2 + i * (Math.PI * 2 / 5);
+        const px = Math.cos(a) * center;
+        const py = Math.sin(a) * center;
+        ctx.beginPath();
+        ctx.arc(px, py, petalR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(61,220,151,' + (0.3 + 0.55 * bloom) + ')';
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.14 * bloom, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,236,179,.92)';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawSource(g, now) {
+    const p = cellCenter(g.source.x, g.source.y);
+    const r = cellR();
+    const pulse = 0.5 + 0.5 * Math.sin(now * 0.003);
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+
+    // 铃身（钟形上半圆）
+    ctx.beginPath();
+    ctx.arc(0, -r * 0.06, r * 0.5, Math.PI, 0);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(110,231,216,.2)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(110,231,216,' + (0.55 + pulse * 0.3) + ')';
+    ctx.lineWidth = Math.max(1.4, r * 0.045);
+    ctx.stroke();
+
+    // 铃沿
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.5, -r * 0.06);
+    ctx.lineTo(r * 0.5, -r * 0.06);
+    ctx.strokeStyle = 'rgba(110,231,216,' + (0.55 + pulse * 0.3) + ')';
+    ctx.stroke();
+
+    // 铃舌
+    ctx.beginPath();
+    ctx.arc(0, r * 0.14, r * 0.13, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(243,201,105,.95)';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawEchoTrail(g, now) {
+    const r = cellR();
+    // 拖尾
+    for (let i = 0; i < g.trail.length; i++) {
+      const t = g.trail[i];
+      const p = cellCenter(t.x, t.y);
+      const a = 0.05 + 0.16 * (i / Math.max(1, g.trail.length - 1));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(110,231,216,' + a + ')';
+      ctx.fill();
+    }
+
+    // 回声头
+    if (g.echoPos) {
+      const p = cellCenter(g.echoPos.x, g.echoPos.y);
+      const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 0.8);
+      halo.addColorStop(0, 'rgba(110,231,216,.8)');
+      halo.addColorStop(0.5, 'rgba(110,231,216,.25)');
+      halo.addColorStop(1, 'rgba(110,231,216,0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(p.x - r * 0.8, p.y - r * 0.8, r * 1.6, r * 1.6);
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * 0.16, 0, Math.PI * 2);
+      ctx.fillStyle = '#eafffb';
+      ctx.fill();
+    }
+  }
+
+  function drawFx(g, now) {
+    if (!g.fx.length) return;
+    for (const e of g.fx) {
+      const t = (now - e.start) / e.dur;
+      if (t < 0 || t >= 1) continue;
+      if (e.type === 'ring') {
+        const p = cellCenter(e.x, e.y);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, e.maxR * easeOutCubic(t) * cellR(), 0, Math.PI * 2);
+        ctx.strokeStyle = e.color;
+        ctx.globalAlpha = 1 - t;
+        ctx.lineWidth = e.width;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      } else if (e.type === 'particle') {
+        e.x += e.vx * 0.016;
+        e.y += e.vy * 0.016;
+        e.vx *= 0.985; e.vy *= 0.985;
+        const p = cellCenter(e.x, e.y);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, e.size * cellR(), 0, Math.PI * 2);
+        ctx.fillStyle = e.color;
+        ctx.globalAlpha = 1 - t;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+    g.fx = g.fx.filter(e => (now - e.start) < e.dur);
+  }
+
+  /* ==========================================================
+     12. 输入
+     ========================================================== */
+  function screenToCell(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((clientX - rect.left) / (rect.width / COLS));
+    const y = Math.floor((clientY - rect.top) / (rect.height / ROWS));
+    return (x >= 0 && y >= 0 && x < COLS && y < ROWS) ? { x, y } : null;
+  }
+
+  function onPointerDown(e) {
+    if (!game) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    Sound.ensure();
+    const cell = screenToCell(e.clientX, e.clientY);
+    if (!cell) return;
+
+    // 声源：直接敲响
+    if (cell.x === game.source.x && cell.y === game.source.y) {
+      if (game.status !== 'firing') fireEcho();
+      e.preventDefault();
+      return;
+    }
+
+    // 镜子：翻转
+    if (mirrorAt(cell.x, cell.y)) {
+      toggleMirror(cell.x, cell.y);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  function onKeyDown(e) {
+    if (e.code === 'Space' || e.code === 'Enter') {
+      if (game && game.status !== 'firing') {
+        e.preventDefault();
+        fireEcho();
+      }
+    } else if (e.code === 'KeyR') {
+      resetMirrors();
+    }
+  }
+
+  /* ==========================================================
+     13. 主循环
+     ========================================================== */
+  function update(now, dt) {
+    const g = game;
+    if (!g) return;
+
+    if (g.shake > 0) g.shake = Math.max(0, g.shake - dt * 14);
+
+    // 绽放进度更新在渲染里做，这里处理回声步进
+    if (g.status === 'firing' && g.fire && now >= g.fire.nextAt) {
+      stepFire(now);
+    }
+  }
+
+  function frame(now) {
+    const dt = Math.min(50, now - lastFrame) / 1000;
+    lastFrame = now;
+    update(now, dt);
+    render(now);
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /* ==========================================================
+     14. 启动
+     ========================================================== */
+  function bindUI() {
+    $('#ringBtn').addEventListener('click', () => { Sound.ensure(); fireEcho(); });
+    $('#resetBtn').addEventListener('click', resetMirrors);
+    $('#soundBtn').addEventListener('click', () => {
+      Sound.setMuted(!Sound.muted);
+      $('#soundBtn').textContent = Sound.muted ? 'MUTED' : 'SOUND';
+    });
+    $('#soundBtn').textContent = Sound.muted ? 'MUTED' : 'SOUND';
+
+    $('#startBtn').addEventListener('click', () => {
+      hideScreens();
+      // 从第一个尚未三星的关卡继续，否则从第一关
+      let idx = LEVELS.findIndex(lv => {
+        const s = profile.levels[lv.id];
+        return !s || s.stars < 3;
+      });
+      if (idx < 0) idx = 0;
+      loadLevel(LEVELS[idx]);
+    });
+
+    $('#howBtn').addEventListener('click', () => {
+      hideScreens();
+      loadLevel(LEVELS[0]);
+      showTip('Tap a mirror to turn it. Tap the bell to ring. Wake every flower.', 4200);
+    });
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', () => { if (game) { fitCanvas(); render(performance.now()); } });
+  }
+
+  function boot() {
+    bindUI();
+    buildLevelSelect();
+    showTitle();
+    fitCanvas();
+    requestAnimationFrame(frame);
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
