@@ -1,13 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
     const header = document.getElementById('navbar');
-    if (header) {
-        header.innerHTML = `
-            <nav style="display: flex; gap: 20px; padding: 20px; background: #333; color: white;">
-                <a href="index.html" style="color: white; text-decoration: none;">Home</a>
-                <a href="quotes.html" style="color: white; text-decoration: none;">Quotes</a>
-                <a href="projects.html" style="color: white; text-decoration: none;">Projects</a>
-                <a href="machine.html" style="color: white; text-decoration: none;">Game</a>
-            </nav>
-        `;
-    }
+    if (!header) return;
+
+    const links = [
+        { href: "index.html", label: "Home" },
+        { href: "quotes.html", label: "Quotes" },
+        { href: "projects.html", label: "Projects" },
+        { href: "machine.html", label: "Game" }
+    ];
+
+    // 判断当前页（GitHub Pages 下可能是 /routine/ 或 /routine/index.html）
+    const current = (window.location.pathname.split('/').pop() || "index.html").toLowerCase();
+
+    const nav = document.createElement('nav');
+    nav.className = 'navbar';
+
+    const brand = document.createElement('a');
+    brand.className = 'nav-brand';
+    brand.href = 'index.html';
+    brand.innerHTML = '<span class="dot"></span>Routine · 学习站';
+    nav.appendChild(brand);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'nav-links';
+
+    links.forEach(l => {
+        const a = document.createElement('a');
+        a.className = 'nav-link';
+        a.href = l.href;
+        a.textContent = l.label;
+        if (l.href.toLowerCase() === current) a.classList.add('active');
+        wrap.appendChild(a);
+    });
+
+    nav.appendChild(wrap);
+    header.appendChild(nav);
 });

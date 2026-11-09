@@ -1,0 +1,169 @@
+/* ============================================================
+   Routine · 学习站
+   与《回声花园》小游戏一致的深色、克制的整体风格。
+   同时适配桌面端与手机端。
+   ============================================================ */
+:root {
+  --bg: #0b0c0f;
+  --panel: #141519;
+  --line: #232529;
+  --ink: #ececef;
+  --muted: #9a9aa1;
+  --accent: #6ee7d8;
+  --gold: #f3c969;
+  --green: #3ddc97;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(110, 231, 216, .07), transparent 42%),
+    radial-gradient(ellipse at 100% 100%, rgba(243, 201, 105, .05), transparent 36%),
+    var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; }
+
+/* ---------- 导航栏 ---------- */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 18px;
+  background: rgba(11, 12, 15, .82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-brand {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: .3px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-brand .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(110, 231, 216, .7);
+}
+.nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 14.5px;
+  transition: color .15s, background .15s;
+}
+.nav-link:hover { color: var(--ink); background: rgba(255, 255, 255, .06); }
+.nav-link.active { color: #0b0c0f; background: var(--accent); font-weight: 600; }
+
+/* ---------- 内容区 ---------- */
+body > section {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 26px 20px 64px;
+}
+
+.hero { padding-top: 22px; }
+.hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(28px, 7vw, 44px);
+  line-height: 1.2;
+  letter-spacing: -.5px;
+}
+.hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(15px, 2.6vw, 17px);
+}
+.hero img {
+  display: block;
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  margin-top: 22px;
+}
+
+/* 随机名言 hero */
+#random-quote-hero {
+  text-align: center;
+  padding-top: 44px;
+  padding-bottom: 10px;
+}
+#quote-text {
+  font-size: clamp(20px, 5vw, 30px);
+  line-height: 1.4;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+#quote-author { color: var(--gold); font-size: 15px; }
+
+/* 标题 */
+section > h1 {
+  margin: 6px 0 18px;
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1.25;
+  letter-spacing: -.3px;
+}
+section h2, .quote-list h2 {
+  margin: 26px 0 14px;
+  font-size: 20px;
+  letter-spacing: .2px;
+}
+
+/* 列表（名言 / 项目） */
+.quote-list ul, section > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.quote-list li, section > ul li {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 15px;
+}
+.quote-list li { color: var(--muted); }
+.quote-list li strong {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+section > ul li { color: var(--ink); }
+
+/* ---------- 手机端 ---------- */
+@media (max-width: 560px) {
+  .navbar { padding: 10px 14px; }
+  .nav-brand { font-size: 15px; }
+  .nav-link { padding: 6px 11px; font-size: 13.5px; }
+  body > section { padding: 20px 16px 48px; }
+  .hero img { max-height: 240px; border-radius: 12px; }
+  #random-quote-hero { padding-top: 30px; }
+  .quote-list li, section > ul li { padding: 12px 14px; font-size: 14px; }
+}
